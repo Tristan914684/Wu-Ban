@@ -1,0 +1,136 @@
+# M2 vertical-slice evidence
+
+**Status:** Active evidence record; locally verified, demo-device gates open  
+**Owner:** Product and gameplay engineering  
+**Last verified:** 26 July 2026  
+**Reference when:** Changing or reporting the consent-to-result player journey.  
+**Agent obligation:** Keep automated, simulated, local-browser, real-camera,
+demo-device, and deployed evidence distinct.
+
+## Implemented journey
+
+The browser application implements:
+
+- Simplified Chinese-first copy with an English toggle;
+- disclosure before the permission choice;
+- explicit real-camera and visibly labelled synthetic paths;
+- standing movement and seated hand/finger modes;
+- safety, calibration, tutorial, countdown, audio-clock gameplay, cooldown,
+  quality-aware result, and stop;
+- three seconds of stable calibration plus a four-move tutorial requiring two
+  comfortable classifier-confirmed repetitions per move;
+- an unscored warm-up followed by the authored Follow, Rhythm, and
+  Memory/no-go durations;
+- deterministic bounded preview support, an always-available gentler action,
+  independent music/cue volume, captions, and optional fixed-copy browser
+  narration;
+- low-light and companion-boundary guidance, with overlapping bodies excluded
+  from scoring;
+- an unusual-day context choice that preserves the result and participation
+  while excluding the session from trend input;
+- one scored primary player;
+- unscoreable-frame handling, participation credit, fun score, and
+  non-diagnostic result copy;
+- summary-only IndexedDB storage and local deletion; and
+- invalid interrupted-session storage during active play/cooldown, with no
+  phantom score or participation before the first attempted cue;
+- an exact local-record inspector showing derived JSON fields and values; and
+- a returning-player path that reuses the last captured mode, repeats camera
+  purpose/permission and safety, and replaces mode selection plus the full
+  tutorial with shortened calibration; and
+- an ephemeral, development-only real-camera evidence report that combines
+  aggregate cue outcomes with render/inference timing, unclear-frame episodes,
+  pauses, and audio-clock drift without persisting cue IDs, attempts, media,
+  landmarks, per-frame timings, or traces; and
+- a compact-screen reading state that blocks phone gameplay.
+
+The self-hosted MediaPipe runtime, pose model, and hand model are loaded only
+for a real-camera session. Synthetic fast timing is available only with
+`?fast=1` and retains the visible simulation badge and `simulated=true`. It
+constructs deterministic pose/hand landmark frames and routes them through the
+production classifiers; it is not a prerecorded live-looking video. The
+test-only `?fast=1&scenario=tracking-loss` variant injects a bounded
+low-confidence landmark window through the same classifier and gameplay
+tracking state machine while retaining those simulation disclosures.
+
+## Automated evidence
+
+Run on the current worktree and repeated from a clean archived checkout with
+Node.js `24.18.0` and npm `11.16.0`:
+
+| Check | Result |
+|---|---|
+| `npm run typecheck` | Passed |
+| `npm run lint` | Passed with zero warnings |
+| `npm test` | 26 files, 82 tests passed |
+| `npm run test:integration` | 3 files, 6 tests passed |
+| `npm run build` | Vite production build passed |
+| `npm run test:e2e` | 4 files, 15 Chrome tests passed |
+| `npm run docs:validate` | 94 documentation files and 2 entrypoints passed |
+
+The tests cover deterministic movement and landmark-replay traces,
+low-confidence and multi-person input, three-second stability, chart phase
+durations, adaptive support, forgiving feedback, weekly participation, scoring
+rules, session validity/state transitions, camera inference cadence, disclosure
+and permission behavior, model-preparation failure recovery, privacy-safe
+camera evidence aggregation and percentiles, camera stop behavior, countdown
+transitions, and
+IndexedDB save/list/clear plus corrupted-record filtering and exact-shape
+reconstruction.
+
+Production-browser tests additionally cover both synthetic modes, unusual-day
+exclusion, keyboard Pause/Resume/Stop, disclosure ordering, browser-denied
+camera guidance and camera-free recovery, personal-trend and sharing
+separation, reduced-motion persistence, 200% equivalent reading layout,
+narrow-screen gameplay blocking, axe scans, offline spectator load, the
+captured returning-player shortcut, classifier-backed tracking loss and
+recovery, quality-invalid persistence, weekly participation without trend
+inclusion for a captured invalid record, and absence of the dev camera report
+from production synthetic results. Simulated history is excluded from both
+returning-player classification and weekly participation.
+
+## Local browser evidence
+
+The Vite application was exercised in the Codex in-app browser at a 1440 x 900
+desktop viewport:
+
+1. Standing simulated journey completed from disclosure to result.
+2. Seated simulated journey completed from disclosure to result.
+3. Every post-selection screen retained the `模拟演示` / `SIMULATED` label.
+4. Both results showed Beat, Shape, Flow, and Memory separately from the fun
+   score and placed `这不是诊断。` / `This is not a diagnosis.` with the result.
+5. Returning home showed the incremented local session count.
+6. The English toggle translated the result and privacy status.
+7. The reduced-motion control set both `aria-pressed=true` and the application
+   reduced-motion state.
+8. At 390 x 844, gameplay content was hidden and the laptop-use explanation
+   was visible.
+9. A clean regression run completed with no browser console warnings or
+   errors.
+10. A visual production-build check at 1280 x 720 confirmed that the tutorial
+    practice surface and gameplay HUD, including pause, gentler support, and
+    optional cue narration plus both volume controls, fit without clipping.
+
+The production bundle was also served through Vite Preview at 1280 x 720 in
+Chrome. After its generated service worker installed the exact bundle,
+self-hosted models, and MediaPipe runtime, the browser network was disabled and
+the page reloaded successfully. The offline user could begin the disclosed,
+visibly labelled synthetic spectator route.
+
+This evidence uses authored synthetic landmarks. It does not establish
+real-camera accuracy, older-adult usability, or demo-device performance.
+
+## Open M2 and device gates
+
+- Representative human runs and a front/back confusion matrix; the dev-only
+  aggregate report is implemented, but no human output is claimed yet.
+- Real-camera inference, tracking-loss, multi-body, lighting, and occlusion
+  checks on the demo laptop.
+- Four-minute real-output audio drift and full-length offline run on the demo
+  laptop; the production offline spectator start is automated.
+- Project-owner listening/comfort approval for the implemented rights-traced
+  procedural `茉莉花` arrangement.
+- Manual screen-reader and forced-colour smoke; automated axe, keyboard core
+  controls, reduced-motion persistence, forced colours, and 200% equivalent
+  reading layout pass.
+- Final Miora environment and cue assets with provenance.
