@@ -63,7 +63,7 @@ interface GameplayScreenProps {
   readonly onResume: () => void;
   readonly onTrackingLost: () => void;
   readonly onTrackingRecovered: () => void;
-  readonly onClockFailure: () => void;
+  readonly onClockFailure: (point: "start" | "runtime") => void;
   readonly onAttemptsChange: (attempts: readonly CueAttempt[]) => void;
   readonly onComplete: (
     attempts: readonly CueAttempt[],
@@ -217,16 +217,21 @@ export function GameplayScreen({
         document.hidden &&
         playbackRef.current === "running"
       ) {
-        void clock.pause().then(() => {
-          onPause();
-        });
+        void clock
+          .pause()
+          .then(() => {
+            onPause();
+          })
+          .catch(() => {
+            onClockFailure("runtime");
+          });
       }
     };
     document.addEventListener("visibilitychange", pauseWhenHidden);
     return () => {
       document.removeEventListener("visibilitychange", pauseWhenHidden);
     };
-  }, [clock, onPause]);
+  }, [clock, onClockFailure, onPause]);
 
   useEffect(() => {
     let cancelled = false;
@@ -260,7 +265,7 @@ export function GameplayScreen({
       } catch {
         if (!cancelled) {
           setClockError(true);
-          onClockFailure();
+          onClockFailure("start");
         }
         return;
       }
@@ -544,13 +549,17 @@ export function GameplayScreen({
   ]);
 
   const togglePause = async () => {
-    if (playback === "paused") {
-      await clock.resume();
-      onResume();
-      return;
+    try {
+      if (playback === "paused") {
+        await clock.resume();
+        onResume();
+        return;
+      }
+      await clock.pause();
+      onPause();
+    } catch {
+      onClockFailure("runtime");
     }
-    await clock.pause();
-    onPause();
   };
 
   const progress = Math.min(1, elapsedMs / chart.durationMs);

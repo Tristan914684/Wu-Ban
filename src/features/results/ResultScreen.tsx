@@ -15,6 +15,14 @@ function percent(value: number): string {
   return `${Math.round(value * 100)}%`;
 }
 
+function evidenceFilename(report: CameraEvidenceReport): string {
+  const chartSegment = report.chartId.replace(
+    /[^a-z0-9-]+/gi,
+    "-",
+  );
+  return `wuban-camera-evidence-${report.mode}-${chartSegment}.json`;
+}
+
 export function ResultScreen({
   language,
   summary,
@@ -26,6 +34,13 @@ export function ResultScreen({
   const contextExcluded = summary.validity.exclusionReasons.includes(
     "self-reported-context",
   );
+  const clockExcluded = summary.validity.exclusionReasons.includes(
+    "clock-error",
+  );
+  const diagnosticJson =
+    diagnosticReport === null
+      ? null
+      : JSON.stringify(diagnosticReport, null, 2);
 
   return (
     <StepLayout
@@ -42,13 +57,17 @@ export function ResultScreen({
             ? isChinese
               ? "这是一局清晰的动作与注意力记录，可以加入你的个人平常模式。"
               : "This was a clear movement-and-attention session and can join your personal usual pattern."
-            : contextExcluded
+            : clockExcluded
               ? isChinese
-                ? "欢乐分和参与记录已保留。因为你说今天有些不同，这一局不会加入个人平常范围。"
-                : "Your game result and participation are saved. Because today felt different, this session will not shape your personal usual range."
-            : isChinese
-              ? "你完成了这一局，但有些片段看不清，所以不会加入个人平常模式。"
-              : "You completed the session, but some input was unclear, so it will not join your usual pattern."}
+                ? "本局部分或全部节拍没有正常工作。欢乐分和参与记录已保留，但不会进入个人平常范围。"
+                : "The beat was unavailable for part or all of this session. Your result and participation are saved, but it will not shape your personal usual range."
+              : contextExcluded
+                ? isChinese
+                  ? "欢乐分和参与记录已保留。因为你说今天有些不同，这一局不会加入个人平常范围。"
+                  : "Your game result and participation are saved. Because today felt different, this session will not shape your personal usual range."
+              : isChinese
+                ? "你完成了这一局，但有些片段看不清，所以不会加入个人平常模式。"
+                : "You completed the session, but some input was unclear, so it will not join your usual pattern."}
         </p>
       }
       eyebrow={isChinese ? "§ 11 — 本局结果" : "§ 11 — SESSION RESULT"}
@@ -107,9 +126,14 @@ export function ResultScreen({
             environment, and tester count separately before adding this JSON
             to M1 evidence.
           </p>
-          <pre data-testid="camera-evidence-json">
-            {JSON.stringify(diagnosticReport, null, 2)}
-          </pre>
+          <pre data-testid="camera-evidence-json">{diagnosticJson}</pre>
+          <a
+            className="button button--quiet local-record-inspector__download"
+            download={evidenceFilename(diagnosticReport)}
+            href={`data:application/json;charset=utf-8,${encodeURIComponent(diagnosticJson ?? "")}`}
+          >
+            Download aggregate evidence JSON
+          </a>
         </details>
       )}
       <Button onClick={onFinish}>

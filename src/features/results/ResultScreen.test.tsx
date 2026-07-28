@@ -76,6 +76,24 @@ describe("result screen diagnostic evidence", () => {
       '"privacyBoundary": "aggregate-camera-evidence-only"',
     );
     expect(json).not.toHaveTextContent("must-not-render");
+    const download = screen.getByRole("link", {
+      name: "Download aggregate evidence JSON",
+    });
+    expect(download).toHaveAttribute(
+      "download",
+      `wuban-camera-evidence-${chart.mode}-${chart.id}.json`,
+    );
+    const href = download.getAttribute("href");
+    expect(href).toMatch(
+      /^data:application\/json;charset=utf-8,/,
+    );
+    const downloadedJson = decodeURIComponent(
+      href?.split(",")[1] ?? "",
+    );
+    expect(downloadedJson).toContain(
+      '"privacyBoundary": "aggregate-camera-evidence-only"',
+    );
+    expect(downloadedJson).not.toContain("must-not-render");
   });
 
   it("does not expose a diagnostic surface without an explicit report", () => {
@@ -90,6 +108,41 @@ describe("result screen diagnostic evidence", () => {
     expect(
       screen.queryByText(
         "DEV-ONLY CAMERA EVIDENCE — NOT YET HUMAN-VALIDATED",
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", {
+        name: "Download aggregate evidence JSON",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("explains that an audio-fallback result cannot shape the usual range", () => {
+    const summary = buildSessionSummary({ validForTrend: false });
+
+    render(
+      <ResultScreen
+        language="en"
+        onFinish={vi.fn()}
+        summary={{
+          ...summary,
+          validity: {
+            validForTrend: false,
+            participationCredit: true,
+            exclusionReasons: ["clock-error"],
+          },
+        }}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        "The beat was unavailable for part or all of this session. Your result and participation are saved, but it will not shape your personal usual range.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(
+        "You completed the session, but some input was unclear, so it will not join your usual pattern.",
       ),
     ).not.toBeInTheDocument();
   });

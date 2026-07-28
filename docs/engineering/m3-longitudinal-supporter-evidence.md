@@ -2,7 +2,7 @@
 
 **Status:** Locally verified; external WeChat owner-test gate open  
 **Owner:** Product and application engineering  
-**Last verified:** 26 July 2026  
+**Last verified:** 28 July 2026
 **Reference when:** Reporting or changing personal trends, supporter consent,
 check-in preview, local sharing persistence, or notification transport.  
 **Agent obligation:** Never equate a local preview or unavailable adapter with
@@ -26,6 +26,9 @@ an externally delivered message.
   consumer.
 - Supporter sharing is off by default and requires a separate, purpose-specific
   local confirmation.
+- Sharing hydration and writes fail closed: unavailable local consent state is
+  not described as off, consent controls remain unavailable until a successful
+  retry, and a rejected grant write never updates the active grant.
 - Revocation blocks future authorisation without deleting session history.
 - Check-in copy states the observed gameplay change, plausible uncertainty,
   friendly action, and non-diagnostic boundary.
@@ -54,9 +57,9 @@ upgrade.
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 26 files, 82 tests passed |
+| `npm test` | 31 files, 97 tests passed |
 | `npm run test:integration` | 3 files, 6 tests passed |
-| `npm run test:e2e` | 4 files, 15 Chrome tests passed |
+| `npm run test:e2e` | 4 files, 24 Chrome tests passed |
 
 Named tests cover BR-005, BR-008 through BR-013, the PRD 80% scoreable-input
 threshold, source/mode separation, insufficient history, repeated-family
@@ -95,6 +98,12 @@ At 1440 x 900 in the Codex in-app browser, with production E2E regression at
     or sharing.
 12. Reading surfaces remained visible without horizontal overflow at a
     640-CSS-pixel viewport, equivalent to 200% zoom from the 1280 baseline.
+13. Entering progress and sharing focused each screen's visible task heading,
+    preserving screen-reader orientation without adding the headings to the
+    normal Tab order.
+14. An unavailable local consent store showed a persistent recovery action,
+    made no sharing-off claim, exposed no grant/send controls, and recovered
+    after a fresh read. A separate write fault left the grant inactive.
 
 ## Open gates
 

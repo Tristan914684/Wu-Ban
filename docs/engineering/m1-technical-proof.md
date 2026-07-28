@@ -81,7 +81,8 @@ audio, landmark, per-frame timestamp, or trace and is not stored in IndexedDB.
 Synthetic and production sessions do not receive it. Unit tests cover
 confusion, unscoreable/neutral outcomes, no-go exclusion, rates, percentiles,
 pause exclusion, clock drift, chart binding, and forbidden raw-field absence;
-a component test covers result presentation.
+a component test covers result presentation and the local aggregate-JSON
+download without exposing private cue IDs.
 
 This makes the collection protocol executable but is not human evidence.
 KI-002 and KI-011 remain open until dated reports are recorded across
@@ -135,3 +136,11 @@ the chart vocabulary.
 - Real-camera FPS, p95 motion-to-feedback, and low-light/occlusion behavior.
 - Four-minute audio/output drift on the demo laptop.
 - Worker-versus-bounded-main-thread comparison with real frames.
+
+## Resolved proof gates
+
+- KI-003: the hand-landmark graph has separate timing evidence, seated
+  calibration and four-cue acceptance criteria, provider-neutral hand frames,
+  classifier tests, deterministic landmark replay, and a complete seated
+  browser journey. Real-human seated validation remains part of KI-011 rather
+  than reopening provider feasibility.

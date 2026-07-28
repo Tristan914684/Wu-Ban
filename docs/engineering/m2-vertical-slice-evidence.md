@@ -2,7 +2,7 @@
 
 **Status:** Active evidence record; locally verified, demo-device gates open  
 **Owner:** Product and gameplay engineering  
-**Last verified:** 26 July 2026  
+**Last verified:** 28 July 2026
 **Reference when:** Changing or reporting the consent-to-result player journey.  
 **Agent obligation:** Keep automated, simulated, local-browser, real-camera,
 demo-device, and deployed evidence distinct.
@@ -17,8 +17,13 @@ The browser application implements:
 - standing movement and seated hand/finger modes;
 - safety, calibration, tutorial, countdown, audio-clock gameplay, cooldown,
   quality-aware result, and stop;
+- an explicit pre-countdown audio failure state with fresh-context retry or a
+  persistently labelled silent practice that is excluded from trend input;
 - three seconds of stable calibration plus a four-move tutorial requiring two
   comfortable classifier-confirmed repetitions per move;
+- mirrored player-facing landmark normalization, averaged standing
+  calibration, ankle-first side-step recognition with hip-centre fallback,
+  and visible body/hand landmark diagnostics during calibration and rehearsal;
 - an unscored warm-up followed by the authored Follow, Rhythm, and
   Memory/no-go durations;
 - deterministic bounded preview support, an always-available gentler action,
@@ -34,6 +39,9 @@ The browser application implements:
 - summary-only IndexedDB storage and local deletion; and
 - invalid interrupted-session storage during active play/cooldown, with no
   phantom score or participation before the first attempted cue;
+- explicit local-data loading, unavailable, and retry states that do not
+  reinterpret a failed read as empty history, while gameplay remains
+  available and result completion still requires a successful summary save;
 - an exact local-record inspector showing derived JSON fields and values; and
 - a returning-player path that reuses the last captured mode, repeats camera
   purpose/permission and safety, and replaces mode selection plus the full
@@ -41,7 +49,8 @@ The browser application implements:
 - an ephemeral, development-only real-camera evidence report that combines
   aggregate cue outcomes with render/inference timing, unclear-frame episodes,
   pauses, and audio-clock drift without persisting cue IDs, attempts, media,
-  landmarks, per-frame timings, or traces; and
+  landmarks, per-frame timings, or traces, with a local aggregate-JSON
+  download for the dated device-evidence record; and
 - a compact-screen reading state that blocks phone gameplay.
 
 The self-hosted MediaPipe runtime, pose model, and hand model are loaded only
@@ -62,13 +71,15 @@ Node.js `24.18.0` and npm `11.16.0`:
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 26 files, 82 tests passed |
+| `npm test` | 31 files, 97 tests passed |
 | `npm run test:integration` | 3 files, 6 tests passed |
 | `npm run build` | Vite production build passed |
-| `npm run test:e2e` | 4 files, 15 Chrome tests passed |
+| `npm run test:e2e` | 4 files, 24 Chrome tests passed |
 | `npm run docs:validate` | 94 documentation files and 2 entrypoints passed |
 
-The tests cover deterministic movement and landmark-replay traces,
+The tests cover player-facing coordinate normalization, ankle-first standing
+side steps, calibration-window averaging, visible landmark diagnostics,
+deterministic movement and landmark-replay traces,
 low-confidence and multi-person input, three-second stability, chart phase
 durations, adaptive support, forgiving feedback, weekly participation, scoring
 rules, session validity/state transitions, camera inference cadence, disclosure
@@ -86,8 +97,21 @@ narrow-screen gameplay blocking, axe scans, offline spectator load, the
 captured returning-player shortcut, classifier-backed tracking loss and
 recovery, quality-invalid persistence, weekly participation without trend
 inclusion for a captured invalid record, and absence of the dev camera report
-from production synthetic results. Simulated history is excluded from both
-returning-player classification and weekly participation.
+from production synthetic results. Screen changes focus the new visible task
+heading for assistive-technology orientation across home, disclosure,
+progress, sharing, and result, after which Tab follows the task order. The E2E
+runner builds and serves the current source on dedicated port 4174 with preview
+reuse disabled. Simulated history is excluded from both returning-player
+classification and weekly participation. Synthetic adapter failures also prove
+that database-open retries use a fresh opening attempt, unavailable history is
+not described as zero history, and a rejected local grant write cannot activate
+sharing. Web Audio fault injection proves that scored cues do not begin after a
+preparation failure, retry creates a fresh context, silent practice remains
+visibly labelled and carries `clock-error`, and leaving during pending
+preparation cannot trigger a stale countdown. A separate runtime fault rejects
+Web Audio pause during scored play and verifies that scoring ends immediately,
+the result remains participation-preserving and trend-invalid, and no corrupted
+gameplay continues.
 
 ## Local browser evidence
 
@@ -130,7 +154,7 @@ real-camera accuracy, older-adult usability, or demo-device performance.
   laptop; the production offline spectator start is automated.
 - Project-owner listening/comfort approval for the implemented rights-traced
   procedural `茉莉花` arrangement.
-- Manual screen-reader and forced-colour smoke; automated axe, keyboard core
-  controls, reduced-motion persistence, forced colours, and 200% equivalent
-  reading layout pass.
+- Manual screen-reader and forced-colour smoke; automated axe, task-heading
+  focus, keyboard core controls, reduced-motion persistence, forced colours,
+  and 200% equivalent reading layout pass.
 - Final Miora environment and cue assets with provenance.

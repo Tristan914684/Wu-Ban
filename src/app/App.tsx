@@ -3,6 +3,7 @@ import {
   useEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from "react";
 
@@ -39,6 +40,7 @@ import { evaluatePersonalTrend } from "../domain/trend/personal-trend";
 import { CalibrationScreen } from "../features/calibration/CalibrationScreen";
 import { CooldownScreen } from "../features/gameplay/CooldownScreen";
 import { CountdownScreen } from "../features/gameplay/CountdownScreen";
+import { AudioRecoveryScreen } from "../features/gameplay/AudioRecoveryScreen";
 import { GameplayScreen } from "../features/gameplay/GameplayScreen";
 import { TutorialScreen } from "../features/gameplay/TutorialScreen";
 import { DisclosureScreen } from "../features/onboarding/DisclosureScreen";
@@ -51,12 +53,27 @@ import { CompletingScreen } from "../features/results/CompletingScreen";
 import { ResultScreen } from "../features/results/ResultScreen";
 import { SharingScreen } from "../features/sharing/SharingScreen";
 import { AppChrome } from "../ui/components/AppChrome";
+import type { LocalDataStatus } from "../ui/components/LocalDataNotice";
 
 type IdleView = "home" | "progress" | "sharing";
+type ClockRecoveryPoint =
+  | "TUTORIAL_COMPLETE"
+  | "RETURNING_CALIBRATED"
+  | "PLAY_START";
 const REDUCED_MOTION_KEY = "wuban-reduced-motion";
+const LANGUAGE_KEY = "wuban-language";
 
 function createSessionId(): string {
   return globalThis.crypto.randomUUID();
+}
+
+function combineLocalDataStatus(
+  ...statuses: readonly LocalDataStatus[]
+): LocalDataStatus {
+  if (statuses.includes("unavailable")) {
+    return "unavailable";
+  }
+  return statuses.includes("loading") ? "loading" : "ready";
 }
 
 function initialReducedMotion(): boolean {
@@ -71,8 +88,20 @@ function initialReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+function initialLanguage(): Language {
+  try {
+    const stored = window.localStorage.getItem(LANGUAGE_KEY);
+    if (stored === "zh" || stored === "en") {
+      return stored;
+    }
+  } catch {
+    // Storage can be unavailable in hardened/private contexts.
+  }
+  return "zh";
+}
+
 export function App() {
-  const [language, setLanguage] = useState<Language>("zh");
+  const [language, setLanguage] = useState<Language>(initialLanguage);
   const [reducedMotion, setReducedMotion] = useState(initialReducedMotion);
   const [state, dispatch] = useReducer(
     reduceSession,
@@ -81,11 +110,15 @@ export function App() {
   );
   const [idleView, setIdleView] = useState<IdleView>("home");
   const [history, setHistory] = useState<readonly SessionSummary[]>([]);
+  const [historyStatus, setHistoryStatus] =
+    useState<LocalDataStatus>("loading");
   const [trendMode, setTrendMode] = useState<"standing" | "seated">(
     "standing",
   );
   const [showSimulatedTrend, setShowSimulatedTrend] = useState(false);
   const [grant, setGrant] = useState<SupporterGrant | null>(null);
+  const [sharingStatus, setSharingStatus] =
+    useState<LocalDataStatus>("loading");
   const [calibration, setCalibration] = useState<StandingCalibration | null>(
     null,
   );
@@ -104,6 +137,11 @@ export function App() {
     () => new UnavailableCheckInNotification(),
   );
   const [clock, setClock] = useState<SessionClock | null>(null);
+  const [clockRecovery, setClockRecovery] =
+    useState<ClockRecoveryPoint | null>(null);
+  const [audioPreparing, setAudioPreparing] = useState(false);
+  const [silentPractice, setSilentPractice] = useState(false);
+  const clockPreparationAttempt = useRef(0);
   const query = new URLSearchParams(window.location.search);
   const fastSynthetic = query.get("fast") === "1";
   const syntheticTrackingScenario: SyntheticTrackingScenario =
@@ -128,6 +166,19 @@ export function App() {
       // The current view still honors the choice when storage is unavailable.
     }
   }, []);
+
+  const changeLanguage = useCallback((nextLanguage: Language) => {
+    setLanguage(nextLanguage);
+    try {
+      window.localStorage.setItem(LANGUAGE_KEY, nextLanguage);
+    } catch {
+      // The current view still honors the choice when storage is unavailable.
+    }
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+  }, [language]);
 
   const chart = useMemo(
     () =>
@@ -167,19 +218,23 @@ export function App() {
     new URLSearchParams(window.location.search).get("debug") === "1";
 
   const refreshHistory = useCallback(async () => {
+    setHistoryStatus("loading");
     try {
       const summaries = await repository.list();
       setHistory(summaries);
+      setHistoryStatus("ready");
     } catch {
-      setHistory([]);
+      setHistoryStatus("unavailable");
     }
   }, [repository]);
 
   const refreshSharing = useCallback(async () => {
+    setSharingStatus("loading");
     try {
       setGrant(await sharingRepository.latestGrant());
+      setSharingStatus("ready");
     } catch {
-      setGrant(null);
+      setSharingStatus("unavailable");
     }
   }, [sharingRepository]);
 
@@ -204,7 +259,7 @@ export function App() {
 
   useEffect(() => {
     return () => {
-      void clock?.stop();
+      void clock?.dispose();
     };
   }, [clock]);
 
@@ -231,8 +286,12 @@ export function App() {
 
     camera.stop();
     detector.close();
-    void clock?.stop();
+    clockPreparationAttempt.current += 1;
+    void clock?.dispose();
     setClock(null);
+    setClockRecovery(null);
+    setAudioPreparing(false);
+    setSilentPractice(false);
     setAttempts([]);
     setPerformanceEvidence(null);
     setCalibration(null);
@@ -245,7 +304,7 @@ export function App() {
         .save(interruptedSummary)
         .then(refreshHistory)
         .catch(() => {
-          // Stopping remains reliable even if private-mode storage is blocked.
+          setHistoryStatus("unavailable");
         });
     }
   }, [
@@ -273,26 +332,71 @@ export function App() {
     return result.failure;
   }, [camera]);
 
-  const prepareClock = useCallback(async (
-    nextEvent: "TUTORIAL_COMPLETE" | "RETURNING_CALIBRATED",
-  ) => {
-    const accelerated = state.source === "synthetic" && fastSynthetic;
-    const nextClock: SessionClock = accelerated
-      ? new AcceleratedSessionClock(
-          syntheticTrackingScenario === "tracking-loss" ? 2 : 12,
-        )
-      : new BrowserSessionClock();
-    setClock(nextClock);
-    try {
-      await nextClock.prepare();
-    } catch {
-      setClockHealthy(false);
-      const fallback = new AcceleratedSessionClock(1);
-      await fallback.prepare();
-      setClock(fallback);
+  const prepareClock = useCallback(
+    async (nextEvent: ClockRecoveryPoint) => {
+      if (audioPreparing) {
+        return;
+      }
+      const preparationAttempt = clockPreparationAttempt.current + 1;
+      clockPreparationAttempt.current = preparationAttempt;
+      setAudioPreparing(true);
+      const accelerated = state.source === "synthetic" && fastSynthetic;
+      const nextClock: SessionClock = accelerated
+        ? new AcceleratedSessionClock(
+            syntheticTrackingScenario === "tracking-loss" ? 2 : 12,
+          )
+        : new BrowserSessionClock();
+      try {
+        await nextClock.prepare();
+        if (clockPreparationAttempt.current !== preparationAttempt) {
+          await nextClock.dispose();
+          return;
+        }
+        setClock(nextClock);
+        setClockHealthy(true);
+        setSilentPractice(false);
+        setClockRecovery(null);
+        if (nextEvent !== "PLAY_START") {
+          dispatch({ type: nextEvent });
+        }
+      } catch {
+        await nextClock.dispose();
+        if (clockPreparationAttempt.current === preparationAttempt) {
+          setClock(null);
+          setClockRecovery(nextEvent);
+        }
+      } finally {
+        if (clockPreparationAttempt.current === preparationAttempt) {
+          setAudioPreparing(false);
+        }
+      }
+    },
+    [
+      audioPreparing,
+      fastSynthetic,
+      state.source,
+      syntheticTrackingScenario,
+    ],
+  );
+
+  const continueWithoutAudio = useCallback(async () => {
+    if (clockRecovery === null || audioPreparing) {
+      return;
     }
-    dispatch({ type: nextEvent });
-  }, [fastSynthetic, state.source, syntheticTrackingScenario]);
+    clockPreparationAttempt.current += 1;
+    setAudioPreparing(true);
+    const fallback = new AcceleratedSessionClock(1);
+    await fallback.prepare();
+    setClock(fallback);
+    setClockHealthy(false);
+    setSilentPractice(true);
+    const nextEvent = clockRecovery;
+    setClockRecovery(null);
+    setAudioPreparing(false);
+    if (nextEvent !== "PLAY_START") {
+      dispatch({ type: nextEvent });
+    }
+  }, [audioPreparing, clockRecovery]);
 
   const commitSummary = useCallback(async (): Promise<SessionSummary> => {
     if (state.mode === null || chart === null || state.source === null) {
@@ -348,41 +452,84 @@ export function App() {
   const markTrackingRecovered = useCallback(() => {
     dispatch({ type: "TRACKING_RECOVERED" });
   }, []);
-  const markClockFailure = useCallback(() => {
+  const handleClockFailure = useCallback((point: "start" | "runtime") => {
+    clockPreparationAttempt.current += 1;
+    void clock?.dispose();
+    setClock(null);
+    if (point === "start") {
+      setClockRecovery("PLAY_START");
+      return;
+    }
     setClockHealthy(false);
-  }, []);
+    dispatch({ type: "PLAY_COMPLETE" });
+  }, [clock]);
   const clearHistory = useCallback(async () => {
-    await repository.clear();
-    await refreshHistory();
-  }, [refreshHistory, repository]);
+    setHistoryStatus("loading");
+    try {
+      await repository.clear();
+      setHistory([]);
+      setHistoryStatus("ready");
+    } catch {
+      setHistoryStatus("unavailable");
+    }
+  }, [repository]);
   const grantSharing = useCallback(async () => {
     const next = createSupporterGrant({
       grantId: createSessionId(),
       supporterBindingId: "local-preview-supporter",
       grantedAt: new Date().toISOString(),
     });
-    await sharingRepository.saveGrant(next);
-    setGrant(next);
+    setSharingStatus("loading");
+    try {
+      await sharingRepository.saveGrant(next);
+      setGrant(next);
+      setSharingStatus("ready");
+    } catch {
+      setSharingStatus("unavailable");
+    }
   }, [sharingRepository]);
   const revokeSharing = useCallback(async () => {
     if (grant === null) {
       return;
     }
     const revoked = revokeSupporterGrant(grant, new Date().toISOString());
-    await sharingRepository.saveGrant(revoked);
-    setGrant(revoked);
+    setSharingStatus("loading");
+    try {
+      await sharingRepository.saveGrant(revoked);
+      setGrant(revoked);
+      setSharingStatus("ready");
+    } catch {
+      setSharingStatus("unavailable");
+    }
   }, [grant, sharingRepository]);
   const handleSendCheckIn = useCallback(
-    (message: string) =>
-      sendCheckIn({
-        report: trendReport,
-        editedMessage: message,
-        repository: sharingRepository,
-        notification,
-        attemptedAt: new Date().toISOString(),
-      }),
+    async (message: string) => {
+      try {
+        return await sendCheckIn({
+          report: trendReport,
+          editedMessage: message,
+          repository: sharingRepository,
+          notification,
+          attemptedAt: new Date().toISOString(),
+        });
+      } catch {
+        setSharingStatus("unavailable");
+        return { kind: "failed" as const, duplicate: false };
+      }
+    },
     [notification, sharingRepository, trendReport],
   );
+  const visibleLocalDataStatus =
+    idleView === "sharing"
+      ? combineLocalDataStatus(historyStatus, sharingStatus)
+      : historyStatus;
+  const retryVisibleLocalData = useCallback(() => {
+    if (idleView === "sharing") {
+      void Promise.all([refreshHistory(), refreshSharing()]);
+      return;
+    }
+    void refreshHistory();
+  }, [idleView, refreshHistory, refreshSharing]);
 
   let screen;
   switch (state.phase) {
@@ -394,6 +541,7 @@ export function App() {
               history.filter((summary) => summary.simulated).length
             }
             language={language}
+            localDataStatus={visibleLocalDataStatus}
             weeklyParticipation={weeklyParticipation}
             onBack={() => {
               setIdleView("home");
@@ -402,6 +550,7 @@ export function App() {
             onOpenSharing={() => {
               setIdleView("sharing");
             }}
+            onRetryLocalData={retryVisibleLocalData}
             onToggleSimulation={() => {
               setShowSimulatedTrend((current) => !current);
             }}
@@ -414,11 +563,13 @@ export function App() {
             grant={grant}
             key={`${trendReport.eventId}:${language}`}
             language={language}
+            localDataStatus={visibleLocalDataStatus}
             onBack={() => {
               setIdleView("progress");
             }}
             onDeleteHistory={clearHistory}
             onGrant={grantSharing}
+            onRetryLocalData={retryVisibleLocalData}
             onRevoke={revokeSharing}
             onSend={handleSendCheckIn}
             report={trendReport}
@@ -430,6 +581,7 @@ export function App() {
           <WelcomeScreen
             historyCount={history.length}
             language={language}
+            localDataStatus={visibleLocalDataStatus}
             onBegin={() => {
               dispatch(
                 returningPlayer
@@ -441,6 +593,7 @@ export function App() {
               );
             }}
             onClearHistory={clearHistory}
+            onRetryLocalData={retryVisibleLocalData}
             onReviewProgress={() => {
               setIdleView("progress");
             }}
@@ -524,6 +677,7 @@ export function App() {
       screen =
         state.mode === null || state.source === null ? null : (
           <TutorialScreen
+            audioPreparing={audioPreparing}
             calibration={calibration}
             camera={camera}
             detector={detector}
@@ -564,7 +718,7 @@ export function App() {
             detector={detector}
             language={language}
             mode={state.mode}
-            onClockFailure={markClockFailure}
+            onClockFailure={handleClockFailure}
             onComplete={completeGameplay}
             onAttemptsChange={setAttempts}
             onPause={() => {
@@ -625,6 +779,21 @@ export function App() {
       break;
   }
 
+  if (clockRecovery !== null) {
+    screen = (
+      <AudioRecoveryScreen
+        busy={audioPreparing}
+        language={language}
+        onContinueSilently={() => {
+          void continueWithoutAudio();
+        }}
+        onRetry={() => {
+          void prepareClock(clockRecovery);
+        }}
+      />
+    );
+  }
+
   return (
     <AppChrome
       cameraActive={
@@ -632,11 +801,12 @@ export function App() {
         !["idle", "disclosure", "permission"].includes(state.phase)
       }
       language={language}
-      onLanguageChange={setLanguage}
+      onLanguageChange={changeLanguage}
       onReducedMotionChange={changeReducedMotion}
       onStop={stopSession}
       phase={state.phase}
       reducedMotion={reducedMotion}
+      silentPractice={silentPractice}
       simulated={
         state.source === "synthetic" ||
         (idleView !== "home" && showSimulatedTrend)

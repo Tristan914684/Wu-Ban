@@ -51,6 +51,12 @@ The repository exposes:
 real-camera, real-output audio, screen-reader, target-device, owner-account,
 research, or submission evidence.
 
+The E2E runner owns dedicated port 4174 and refuses to reuse an existing
+preview. This ensures `npm run test:e2e` exercises the production bundle built
+from the current source rather than a long-running server from another
+worktree. Local development and ad hoc preview commands keep their normal
+ports.
+
 ## Environment
 
 - The core game has no required environment configuration.
@@ -91,11 +97,11 @@ visibly simulated and must never be cited as real-camera or device evidence.
 5. Complete the full authored session at demo speed.
 6. On the result screen, expand the already-open
    `DEV-ONLY CAMERA EVIDENCE — NOT YET HUMAN-VALIDATED` section.
-7. Copy the aggregate JSON into the dated M1 evidence record and review each
-   expected-versus-observed row, especially `step-forward` and `step-back`.
-   Also compare the active-session render/inference rates, inference
-   duration p95, unclear-frame episodes, and audio-clock drift with the
-   documented budgets.
+7. Use `Download aggregate evidence JSON` and attach the file to the dated M1
+   evidence record. Review each expected-versus-observed row, especially
+   `step-forward` and `step-back`. Also compare the active-session
+   render/inference rates, inference duration p95, unclear-frame episodes, and
+   audio-clock drift with the documented budgets.
 8. Repeat across the representative conditions and people required by the
    validation plan before changing KI-002 or KI-011.
 

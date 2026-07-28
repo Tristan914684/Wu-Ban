@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 26 July 2026  
+**Last verified:** 28 July 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,8 +21,8 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: 82 unit/component tests, 6 IndexedDB
-  integration/migration tests, and 15 production Chrome E2E tests pass.
+- Automated application tests: 97 unit/component tests, 6 IndexedDB
+  integration/migration tests, and 24 production Chrome E2E tests pass.
 - CI: least-privileged GitHub Actions workflow is implemented locally; its
   first remote run remains unverified until the branch is pushed to GitHub.
 - Production deployment: private Sites URL is live at
@@ -65,8 +65,8 @@ file after material verified changes.
    demo laptop.
 2. Complete project-owner listening and the four-minute real-output audio run
    for the implemented rights-traced procedural `茉莉花` arrangement.
-3. Complete real-camera, screen-reader, forced-colour, and target-device
-   non-happy checks for M2 and M3.
+3. Complete real-camera, manual screen-reader, manual forced-colour, and
+   target-device non-happy checks for M2 and M3.
 4. Select and configure the owner-controlled WeChat test channel before
    implementing any external send adapter.
 
@@ -88,14 +88,37 @@ file after material verified changes.
 
 ## Evidence status
 
-- Typecheck, lint, 82 unit/component tests, 6 IndexedDB
-  integration/migration tests, 15 production Chrome E2E tests, production
+- Typecheck, lint, 97 unit/component tests, 6 IndexedDB
+  integration/migration tests, 24 production Chrome E2E tests, production
   build, and documentation validation are verified locally.
 - Standing and seated synthetic journeys, bilingual result copy,
   self-reported context exclusion, denied-camera guidance and camera-free
   recovery, model-preparation failure fallback, persistent reduced motion,
   local history, compact-screen gameplay blocking, 200% equivalent reading
   layout, offline spectator start, and a clean browser console are verified.
+- The chosen Simplified Chinese or English interface now persists locally and
+  updates the document language for assistive technology. Language and the
+  persistent reduced-dynamics switch live in a compact Display and comfort
+  disclosure instead of occupying the primary header row.
+- Calibration status and recovery guidance occupy separate preview regions.
+  Missing landmarks now prompt repositioning instead of being labelled as a
+  lighting problem, and the MediaPipe provider confidence gate is aligned to
+  the domain gate at `0.45`. Real-camera accuracy under representative
+  lighting remains an open device-evidence gate.
+- Real-camera landmarks are normalized to the same mirrored player view as the
+  visible preview. Standing side steps use ankle displacement first with
+  hip-centre movement as fallback, and the three-second calibration stores an
+  average rather than one final frame. Calibration and movement practice now
+  draw the scoreable body/hand landmarks and name the detected parts; rehearsal
+  also reports the current classified direction. These changes have automated
+  landmark and classifier evidence, but still require a representative human
+  run on the demo camera.
+- The seven primary setup surfaces now respond to both viewport width and
+  height. At the 1280 x 720 target, home, disclosure, permission, mode, safety,
+  calibration, and movement practice require no page-level vertical scrolling;
+  the same path was browser-measured without overflow from 650 to 900 px tall.
+  Long progress, privacy, stored-record, and zoomed reading surfaces retain
+  normal document scrolling rather than shrinking below accessible sizes.
 - Three-second stable calibration, four-move/two-repetition rehearsal,
   warm-up exclusion, Good/Nearly/Try-next feedback, weekly participation,
   adaptive preview support, independent music/cue volume, companion
@@ -107,6 +130,22 @@ file after material verified changes.
 - IndexedDB session reads deeply validate and reconstruct the approved summary
   schema. Malformed nested values are ignored, and unexpected stored fields
   cannot flow into history, trend evaluation, or the privacy inspector.
+- Local history and sharing hydration expose loading and unavailable states
+  instead of converting failures into zero history or sharing-off claims.
+  Database-open failures clear the cached opening attempt so an explicit retry
+  can recover. Data-dependent trend and consent controls stay hidden while
+  unavailable; gameplay remains available, completion waits for a successful
+  summary save, and a failed grant write never becomes active consent.
+- Audio preparation failure now stops before countdown instead of silently
+  changing clocks. The player can retry with a fresh Web Audio context or
+  choose a persistently labelled silent practice; silent results retain fun
+  and participation but carry `clock-error` and never shape a personal trend.
+  Leaving while audio is still preparing invalidates the pending attempt, so a
+  late adapter result cannot start a stale session.
+- A fatal audio pause/resume failure during scored play now ends scoring
+  immediately instead of leaving a corrupted session active. The result keeps
+  participation, carries `clock-error`, explains that the beat was unavailable,
+  and remains excluded from personal trends.
 - A deterministic low-confidence window is replayed through the production
   classifier in Chrome to verify tracking-loss guidance, automatic recovery,
   quality-invalid persistence, and exclusion from trend input. A separate
@@ -115,12 +154,22 @@ file after material verified changes.
   proof.
 - Optional browser/system cue narration is explicit and off by default, speaks
   only fixed caption text, follows cue volume, and is never required for play.
+- Each reading-surface transition programmatically focuses its visible task
+  heading without adding it to the normal Tab order. Production Chrome verifies
+  home, disclosure, progress, sharing, and result orientation, then verifies
+  that Tab advances from disclosure to its primary action. The same journey
+  checks the exposed names and pressed state of the persistent settings
+  controls. Manual VoiceOver and forced-colour smoke remain open.
+- Production E2E starts its own build on dedicated port 4174 with preview reuse
+  disabled, preventing a long-running development or preview server from
+  satisfying browser tests for a different source state.
 - The development-only `?debug=1` real-camera result report combines aggregate
   expected-versus-detected counts with active-session render/inference rates,
   inference duration median/p95, unclear-frame reasons/episodes, pauses, and
   audio-clock drift. It contains no cue IDs, attempts, media, per-frame timing,
-  landmarks, or saved traces and never enters IndexedDB. It is collection
-  tooling only; KI-002 and KI-011 remain open for human/device runs.
+  landmarks, or saved traces and never enters IndexedDB. The operator can
+  download that aggregate JSON locally for the dated evidence record. It is
+  collection tooling only; KI-002 and KI-011 remain open for human/device runs.
 - A clean archived checkout under Node.js `24.18.0` and npm `11.16.0`
   installed 260 locked packages, reported zero vulnerabilities, and passed
   documentation, lint, typecheck, unit, integration, build/budget, and all
@@ -136,6 +185,11 @@ file after material verified changes.
   WeChat delivery has been attempted or claimed.
 - Real-camera, demo-device, final music, Miora, older-adult, WeChat,
   authenticated production, and remote CI evidence remain open.
+- KI-003 is resolved by the measured hand-landmark provider, separate seated
+  calibration/acceptance criteria, classifier and replay tests, and seated
+  browser journey. KI-006 is resolved by accepted ADR-0004 and the implemented
+  non-diagnostic check-in boundary; the older PRD phrase does not authorise a
+  health alert.
 - Detailed evidence: [`m2-vertical-slice-evidence.md`](../engineering/m2-vertical-slice-evidence.md).
 - PRD status map:
   [`prd-acceptance-audit.md`](../engineering/prd-acceptance-audit.md).

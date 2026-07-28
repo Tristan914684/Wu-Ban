@@ -7,6 +7,17 @@ system.
 **Agent obligation:** Add an entry for changed authority, workflow, architecture
 governance, or product interpretation; omit typo-only edits.
 
+## 2026-07-28
+
+- Made the primary laptop setup journey responsive to viewport height as well
+  as width. Header height, display type, spacing, controls, artwork, setup
+  lists, and practice content now compress within accessibility floors; a
+  production-browser regression guards against page-level scrolling at
+  1280 x 720.
+- Kept long progress, privacy, stored-record, and zoomed reading surfaces on
+  normal document scrolling instead of introducing cramped nested scroll
+  regions.
+
 ## 2026-07-26
 
 - Established `docs/` as the human/AI operating system.
@@ -117,3 +128,50 @@ governance, or product interpretation; omit typo-only edits.
   attempts, and per-frame timings; human/device capture remains open.
 - Activated the implemented project-structure contract and corrected the
   technical-debt register's stale pre-scaffold wording.
+- Added a development-only local download for the already aggregate,
+  privacy-safe camera evidence JSON so dated human/device records can use the
+  exact artifact without copying rendered text.
+- Resolved KI-003 with the implemented hand-provider spike, separate seated
+  acceptance criteria, classifier/replay tests, and seated browser journey.
+  Resolved KI-006 with accepted ADR-0004 and the implemented non-diagnostic
+  check-in boundary.
+- Rechecked the official Tencent event page on 26 July 2026. It still exposes
+  only the overall 1 July-30 September event window, so KI-008 remains open
+  pending the project-specific submission portal or organiser confirmation.
+- Added task-heading focus on reading-surface transitions so screen-reader and
+  keyboard users are oriented to home, disclosure, progress, sharing, and
+  result before continuing through the task. Manual VoiceOver and
+  forced-colour smoke remain open.
+- Isolated production Chrome verification on dedicated port 4174 with preview
+  reuse disabled after discovering that a long-running server from another
+  worktree could otherwise satisfy Playwright's readiness check.
+- Added explicit local-data loading, unavailable, and retry states. Failed
+  reads no longer masquerade as empty history or sharing-off, failed database
+  opens can be retried with a fresh connection, and rejected grant writes stay
+  ungranted. Session completion continues to require a successful local
+  summary save.
+- Replaced the hidden audio-clock fallback with a pre-countdown recovery
+  screen. Retry opens a fresh Web Audio context; the alternative silent
+  practice remains visibly labelled, records `clock-error`, and cannot shape a
+  personal trend. Pending preparation is cancelled on exit so late adapter
+  completion cannot start a stale session.
+- Converted fatal Web Audio pause/resume rejection during scored play into an
+  immediate trend-invalid result. Scoring no longer continues against a
+  corrupted clock, participation is preserved, and the player receives a
+  specific non-blaming explanation.
+- Persisted the chosen Simplified Chinese or English interface, synchronised
+  the document language for assistive technology, and grouped language with a
+  true reduced-dynamics switch in a compact Display and comfort disclosure.
+- Shifted the visual treatment from digitally pristine editorial panels toward
+  adult hand-painted paper and ink through fibrous texture, irregular rules,
+  print-like control edges, and a painted community-square study.
+- Separated the calibration progress badge from its guidance banner, stopped
+  treating every missing-landmark frame as a lighting problem, and relaxed the
+  MediaPipe provider confidence gate from `0.55` to the domain-aligned `0.45`.
+- Corrected the real-camera left/right mismatch by normalizing MediaPipe output
+  to the mirrored player preview, added ankle-first side-step recognition with
+  hip fallback, averaged the stable calibration window, and exposed the single
+  confidence tuning constant in `domain/movement/landmarks.ts`.
+- Added live standing and seated landmark skeletons, mode-specific body/hand
+  framing targets, detected-part status, and an explicit classified-movement
+  readout during rehearsal so camera failures are visible instead of silent.
