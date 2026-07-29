@@ -68,7 +68,6 @@ export function PermissionScreen({
             : "The camera only helps the on-device movement model read direction. Images are not saved or uploaded, and the browser asks only after you choose the button."}
         </p>
       }
-      eyebrow={isChinese ? "§ 02 — 选择输入" : "§ 02 — CHOOSE INPUT"}
       title={isChinese ? "现在打开摄像头？" : "Turn on the camera now?"}
     >
       <Button disabled={pending} onClick={() => void requestCamera()}>

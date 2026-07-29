@@ -20,7 +20,6 @@ export function ModeScreen({ language, onChoose }: ModeScreenProps) {
             : "Both routes use the same rhythm, with different calibration and movement."}
         </p>
       }
-      eyebrow={isChinese ? "§ 03 — 游戏方式" : "§ 03 — PLAY MODE"}
       title={isChinese ? "今天怎么动？" : "How would you like to move?"}
     >
       <div className="choice-list">

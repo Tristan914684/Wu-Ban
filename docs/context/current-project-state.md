@@ -21,7 +21,7 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: 97 unit/component tests, 6 IndexedDB
+- Automated application tests: 106 unit/component tests, 6 IndexedDB
   integration/migration tests, and 24 production Chrome E2E tests pass.
 - CI: least-privileged GitHub Actions workflow is implemented locally; its
   first remote run remains unverified until the branch is pushed to GitHub.
@@ -74,7 +74,10 @@ file after material verified changes.
 
 - Clean temporary install audit: zero known vulnerabilities across 50
   dependencies.
-- Headless Chrome blank-frame p95: 9.30 ms pose; 15.50 ms hand.
+- Headless Chrome blank-frame p95: 9.30 ms pose. The current seated adapter's
+  640 x 480 supplied-frame video replay measured 28.40 ms median and 29.30 ms
+  warm p95 across 40 detections; a representative demo-device run remains
+  required.
 - The camera scheduler requests inference at most every 30 ms rather than
   imposing a sub-20-FPS ceiling; real effective FPS remains a demo-device gate.
 - Real-camera development sessions can emit an ephemeral aggregate device
@@ -88,9 +91,8 @@ file after material verified changes.
 
 ## Evidence status
 
-- Typecheck, lint, 97 unit/component tests, 6 IndexedDB
-  integration/migration tests, 24 production Chrome E2E tests, production
-  build, and documentation validation are verified locally.
+- Documentation validation, lint, 106 unit/component tests, TypeScript compilation (typecheck), and production Vite build are verified in the current worktree.
+- Movement rehearsal features a clean 3-column, single-page layout without text overlays on the camera preview. All move lists, active cue cards, position reset instructions, and tracking readouts live in layout panels around the video. Every movement cue provides clear, explicit movement instructions in both English and Simplified Chinese side-by-side. The entire workspace fits within 100dvh without vertical scrolling.
 - Standing and seated synthetic journeys, bilingual result copy,
   self-reported context exclusion, denied-camera guidance and camera-free
   recovery, model-preparation failure fallback, persistent reduced motion,
@@ -105,6 +107,12 @@ file after material verified changes.
   lighting problem, and the MediaPipe provider confidence gate is aligned to
   the domain gate at `0.45`. Real-camera accuracy under representative
   lighting remains an open device-evidence gate.
+- Seated camera frames now pass through a reusable transient in-memory canvas
+  and fresh Hand Landmarker image inference. This avoids both the task's
+  unpopulated per-landmark visibility field and the browser build's empty
+  stateful video-tracker result. Both supplied real frames and a 40-frame video
+  replay reach the seated classifier and visible hand count; representative
+  live human-device validation remains open.
 - Real-camera landmarks are normalized to the same mirrored player view as the
   visible preview. Standing side steps use ankle displacement first with
   hip-centre movement as fallback, and the three-second calibration stores an
@@ -113,6 +121,19 @@ file after material verified changes.
   also reports the current classified direction. These changes have automated
   landmark and classifier evidence, but still require a representative human
   run on the demo camera.
+- Movement rehearsal now keeps the camera as the centred, dominant proof
+  surface. Move progress, the active cue, centre/home guidance, and tracking
+  status are compact overlays. The rehearsal frame expands to a taller 16:10,
+  laptop-width surface while the 4:3 camera and tracking geometry remain
+  aligned in its centre, with replay and pace controls in the side rails. Reset
+  feedback names the next physical action for standing feet or seated hands. A
+  drawn centre axis with standing footprints or seated marker makes the default
+  position explicit, and a held movement cannot count twice until the
+  classifier observes a neutral return.
+- Setup screens without a supporting visual now use the full editorial grid
+  instead of reserving an empty right column. Split screens keep their visual
+  active at common laptop widths, while the scored playfield spans the viewport
+  and keeps its cue target at the true screen centre beneath a contained HUD.
 - The seven primary setup surfaces now respond to both viewport width and
   height. At the 1280 x 720 target, home, disclosure, permission, mode, safety,
   calibration, and movement practice require no page-level vertical scrolling;

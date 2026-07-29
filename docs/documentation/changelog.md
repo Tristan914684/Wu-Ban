@@ -9,6 +9,13 @@ governance, or product interpretation; omit typo-only edits.
 
 ## 2026-07-28
 
+- Removed the permanently reserved empty column from setup screens, kept
+  calibration split across common laptop widths, and moved the gameplay HUD
+  into a contained overlay so the playfield remains full-width and centred.
+- Reframed movement rehearsal around a camera-first practice stage. Move
+  progress, active cue, centre/home guidance, and tracking status now sit
+  beside or over the preview; a drawn home marker and neutral-return latch make
+  the centred default position part of the interaction rather than extra copy.
 - Made the primary laptop setup journey responsive to viewport height as well
   as width. Header height, display type, spacing, controls, artwork, setup
   lists, and practice content now compress within accessibility floors; a

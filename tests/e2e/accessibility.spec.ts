@@ -247,6 +247,21 @@ test("primary setup screens fit the laptop viewport without page scrolling", asy
     .getByRole("button", { name: "位置没问题", exact: true })
     .click();
   await expectPageToFitViewport(page, "Movement tutorial");
+  await expect(
+    page.getByRole("heading", { name: "从中央开始，也回到中央。" }),
+  ).toBeVisible();
+  const practiceStage = page.locator("[data-practice-stage]");
+  await expect(practiceStage).toBeInViewport();
+  const stageBox = await practiceStage.boundingBox();
+  const viewport = page.viewportSize();
+  expect(stageBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(stageBox!.width).toBeGreaterThan(520);
+  expect(stageBox!.height).toBeGreaterThan(390);
+  expect(
+    Math.abs(stageBox!.x + stageBox!.width / 2 - viewport!.width / 2),
+  ).toBeLessThan(2);
+  await expect(page.getByText("中央起点", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "设置", exact: true }).click();
   await page.getByRole("radio", { name: "English", exact: true }).check();

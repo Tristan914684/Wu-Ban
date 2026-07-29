@@ -30,7 +30,6 @@ export function SafetyScreen({
               : "Use a stable chair that will not slide, with both feet resting naturally."}
         </p>
       }
-      eyebrow={isChinese ? "§ 04 — 安全准备" : "§ 04 — SAFETY CHECK"}
       title={isChinese ? "舒服比标准更重要。" : "Comfort comes before precision."}
     >
       <ul className="safety-list">

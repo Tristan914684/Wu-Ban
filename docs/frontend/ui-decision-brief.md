@@ -18,8 +18,11 @@ motion; do not drift into a generic dashboard or childish fitness game.
 - Creative world: fibrous rice paper, visible ink edges, painted sunset light,
   lantern targets, and calm public-square geometry.
 - Density: sparse during player flow; balanced on results and supporter views.
-- Hierarchy: the current instruction or cue is primary, the concrete next
-  action is second, and camera/quality status is peripheral but visible.
+- Hierarchy: the current instruction or cue is primary during setup and scored
+  play. During camera rehearsal, the camera is the central proof surface; the
+  current cue, move progress, centre/home guidance, and quality status sit in
+  compact overlays rather than displacing it. During scored play, the playfield
+  spans the viewport and remains centred beneath a contained peripheral HUD.
 - Component grammar: stable playfield, imperfect ruled sections, status bands,
   definition lists, a compact Display and comfort disclosure, and one primary
   action. No interchangeable metric-card grid.
@@ -57,6 +60,13 @@ motion; do not drift into a generic dashboard or childish fitness game.
   knees, and ankles over a body target; seated replaces that target with two
   hand zones and draws the detected hand joints. This diagnostic layer is
   stable, non-decorative, and does not animate independently of the live input.
+- Rehearsal marks the centre/home position with a persistent axis and
+  footprints or seated marker. Every repetition begins from that neutral home
+  position and only another neutral return can arm the following repetition.
+  After a counted movement, feedback names the exact reset action: feet return
+  to the centre marks in standing mode; hands lower beside the shoulders in
+  seated mode. Replay and pace controls use the side rails to preserve camera
+  height.
 - Rejected: scroll hijacking, smooth scrolling, parallax, custom cursor,
   animated background particles during play, and floating cards.
 
@@ -67,6 +77,12 @@ motion; do not drift into a generic dashboard or childish fitness game.
   non-essential artwork respond to viewport height so the primary setup
   journey fits without page scrolling down to a 650 px-tall viewport. Controls
   remain at least 44 px and body copy remains readable.
+- Setup screens without an aside span the available editorial grid rather than
+  reserving an empty visual column. Split screens keep the supporting visual in
+  the right-hand region until the content itself requires stacking.
+- The rehearsal camera remains horizontally centred and visually dominant
+  from the 1280 x 720 target down to the supported 800 x 720 compact laptop
+  width; overlays collapse in detail before the proof surface is displaced.
 - Compact reading: player setup stacks vertically; gameplay is unavailable on
   phone-sized viewports and offers a spectator explanation.
 - Wide/TV: preserve the 16:9 playfield and increase type/targets within safe

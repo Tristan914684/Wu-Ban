@@ -22,7 +22,6 @@ export function DisclosureScreen({
             : "The camera is used only to find body or hand landmarks so the game can respond to movement."}
         </p>
       }
-      eyebrow={isChinese ? "§ 01 — 摄像头说明" : "§ 01 — CAMERA DISCLOSURE"}
       title={
         <>
           {isChinese ? "画面看过就" : "Frames are seen,"}

@@ -566,7 +566,11 @@ export function GameplayScreen({
   const currentSection = visibleCue?.section ?? "warmup";
   return (
     <main className="gameplay-screen">
-      <section className="gameplay-stage" aria-label="Dance playfield">
+      <section
+        className="gameplay-stage"
+        aria-label="Dance playfield"
+        data-gameplay-stage
+      >
         {source === "camera" ? (
           <video
             aria-label={isChinese ? "当前摄像头画面" : "Current camera view"}
@@ -625,7 +629,7 @@ export function GameplayScreen({
           </div>
         ) : null}
       </section>
-      <aside className="gameplay-hud">
+      <aside className="gameplay-hud" data-gameplay-hud>
         <p className="eyebrow">
           {SECTION_LABELS[currentSection][isChinese ? 0 : 1]}
         </p>

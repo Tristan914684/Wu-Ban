@@ -57,7 +57,6 @@ export function WelcomeScreen({
             : "Move to a familiar beat. Wǔbàn keeps a local movement-and-attention pattern so a family check-in can start with context."}
         </p>
       }
-      eyebrow={isChinese ? "社区广场 · 金色黄昏" : "COMMUNITY SQUARE · GOLDEN DUSK"}
       title={
         <>
           {isChinese ? "一起跳，" : "Dance together."}

@@ -169,7 +169,7 @@ export function AppChrome({
                       }}
                       type="radio"
                     />
-                    <span lang="zh-CN">简体中文</span>
+                    <span lang="zh-CN">中文</span>
                   </label>
                   <label>
                     <input

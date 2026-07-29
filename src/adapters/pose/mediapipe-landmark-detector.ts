@@ -34,9 +34,46 @@ export function translatePlayerFacingLandmark(
   };
 }
 
+export function translatePlayerFacingHandLandmark(
+  landmark: SdkLandmark,
+): NormalizedLandmark {
+  return {
+    x: 1 - landmark.x,
+    y: landmark.y,
+    z: landmark.z,
+    // Hand Landmarker leaves these optional SDK fields at zero. Detection,
+    // presence, and tracking confidence are already enforced by the task
+    // options, so zero here means "not reported", not "not visible".
+    visibility: 1.0,
+    presence: 1.0,
+  };
+}
+
+export function copyVideoFrameForHandDetection(
+  video: HTMLVideoElement,
+  canvas: HTMLCanvasElement,
+): HTMLCanvasElement {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  if (width <= 0 || height <= 0) {
+    throw new Error("Camera frame dimensions are not ready.");
+  }
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+  const context = canvas.getContext("2d");
+  if (context === null) {
+    throw new Error("Unable to prepare the hand-detection frame.");
+  }
+  context.drawImage(video, 0, 0, width, height);
+  return canvas;
+}
+
 export class MediaPipeLandmarkDetector {
   private poseDetector: PoseLandmarker | null = null;
   private handDetector: HandLandmarker | null = null;
+  private handInputCanvas: HTMLCanvasElement | null = null;
   private mode: SessionMode | null = null;
   private loadPromise: Promise<void> | null = null;
 
@@ -84,7 +121,9 @@ export class MediaPipeLandmarkDetector {
       minHandPresenceConfidence: LANDMARK_DETECTOR_CONFIDENCE,
       minTrackingConfidence: LANDMARK_DETECTOR_CONFIDENCE,
       numHands: 4,
-      runningMode: "VIDEO",
+      // A fresh palm detection is more reliable for hands entering the live
+      // webcam frame than the stateful video tracker in this browser build.
+      runningMode: "IMAGE",
     });
   }
 
@@ -102,7 +141,12 @@ export class MediaPipeLandmarkDetector {
     }
 
     if (this.mode === "seated" && this.handDetector !== null) {
-      const result = this.handDetector.detectForVideo(video, timestampMs);
+      this.handInputCanvas ??= document.createElement("canvas");
+      const input = copyVideoFrameForHandDetection(
+        video,
+        this.handInputCanvas,
+      );
+      const result = this.handDetector.detect(input);
       const hands: HandLandmarks[] = result.landmarks.map(
         (landmarks, index) => {
           const category = result.handedness[index]?.[0];
@@ -111,7 +155,7 @@ export class MediaPipeLandmarkDetector {
           return {
             handedness,
             handednessScore: category?.score ?? 0,
-            landmarks: landmarks.map(translatePlayerFacingLandmark),
+            landmarks: landmarks.map(translatePlayerFacingHandLandmark),
           };
         },
       );
@@ -135,6 +179,7 @@ export class MediaPipeLandmarkDetector {
     this.handDetector?.close();
     this.poseDetector = null;
     this.handDetector = null;
+    this.handInputCanvas = null;
     this.loadPromise = null;
     this.mode = null;
   }

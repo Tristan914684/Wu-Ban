@@ -21,6 +21,9 @@ than silently rewriting history.
 | PD-011 | 2026-07-26 | One primary player contributes to personal trends; companions may dance socially. | True multi-person profiling remains out of scope. |
 | PD-012 | 2026-07-28 | Language and motion preferences belong in a compact Display and comfort disclosure rather than the primary header navigation. | Persist the language choice, expose an explicit Chinese/English selection, and use a true switch for reduced dynamics. |
 | PD-013 | 2026-07-28 | The UI should feel adult and hand-painted rather than digitally pristine or template-generated. | Keep the warm editorial hierarchy while using paper fibre, rough ink edges, painted dusk forms, and restrained imperfect geometry. |
+| PD-014 | 2026-07-28 | Movement rehearsal should keep the camera front and centre, with a centred neutral position as the repeated home state. | Put move progress and guidance beside or over the camera, show a centre/home diagram, and require a neutral return before another repetition can count. |
+| PD-015 | 2026-07-28 | Common laptop layouts should use the available width, while the scored game stays front-centre and visually dominant. | Do not reserve an empty aside on text-only setup screens; keep split-screen visuals active where they fit, and overlay the contained HUD without shifting the playfield centre. |
+| PD-016 | 2026-07-28 | Rehearsal reset feedback must name the physical next action, and secondary controls may move to side rails to preserve camera height. | Tell standing players to return both feet to the centre marks and seated players to lower both hands beside their shoulders; keep replay and pace controls peripheral to the camera. |
 
 ## Adding a decision
 

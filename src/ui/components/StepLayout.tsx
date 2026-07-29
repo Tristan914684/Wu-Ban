@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
 interface StepLayoutProps {
-  readonly eyebrow: string;
+  readonly eyebrow?: ReactNode;
   readonly title: ReactNode;
   readonly description?: ReactNode;
   readonly children: ReactNode;
@@ -22,13 +22,18 @@ export function StepLayout({
   }, []);
 
   return (
-    <main className="step-layout">
+    <main
+      className="step-layout"
+      data-has-aside={aside === undefined ? "false" : "true"}
+    >
       <div className="step-layout__rail" aria-hidden="true">
         <span>§</span>
         <span className="step-layout__rule" />
       </div>
       <section className="step-layout__content">
-        <p className="eyebrow">{eyebrow}</p>
+        {eyebrow === undefined || eyebrow === null ? null : (
+          <p className="eyebrow">{eyebrow}</p>
+        )}
         <h1 ref={headingRef} tabIndex={-1}>
           {title}
         </h1>

@@ -19,8 +19,9 @@ The browser application implements:
   quality-aware result, and stop;
 - an explicit pre-countdown audio failure state with fresh-context retry or a
   persistently labelled silent practice that is excluded from trend input;
-- three seconds of stable calibration plus a four-move tutorial requiring two
-  comfortable classifier-confirmed repetitions per move;
+- three seconds of stable calibration plus a camera-centred four-move tutorial
+  requiring two comfortable classifier-confirmed repetitions per move, with a
+  visible centre/home guide and a neutral return before each repeat;
 - mirrored player-facing landmark normalization, averaged standing
   calibration, ankle-first side-step recognition with hip-centre fallback,
   and visible body/hand landmark diagnostics during calibration and rehearsal;
@@ -71,15 +72,24 @@ Node.js `24.18.0` and npm `11.16.0`:
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 31 files, 97 tests passed |
+| `npm test` | 34 files, 103 tests passed |
 | `npm run test:integration` | 3 files, 6 tests passed |
 | `npm run build` | Vite production build passed |
 | `npm run test:e2e` | 4 files, 24 Chrome tests passed |
 | `npm run docs:validate` | 94 documentation files and 2 entrypoints passed |
 
-The tests cover player-facing coordinate normalization, ankle-first standing
-side steps, calibration-window averaging, visible landmark diagnostics,
-deterministic movement and landmark-replay traces,
+For the seated-hand confidence fix and rehearsal-layout/copy follow-up,
+documentation validation, lint, 106 unit/component tests, and 6 IndexedDB
+integration/migration tests passed in the current worktree. The full gate
+stopped at an unrelated in-progress `StepLayoutProps` mismatch, so typecheck,
+production build, and E2E were not reverified after these changes.
+
+The tests cover player-facing coordinate normalization, hand-landmark
+confidence translation, ankle-first standing side steps, calibration-window
+averaging, visible landmark diagnostics,
+tutorial centre-return latching, camera-first hierarchy, wide/split step-layout
+selection, deterministic
+movement and landmark-replay traces,
 low-confidence and multi-person input, three-second stability, chart phase
 durations, adaptive support, forgiving feedback, weekly participation, scoring
 rules, session validity/state transitions, camera inference cadence, disclosure
@@ -131,9 +141,13 @@ desktop viewport:
    was visible.
 9. A clean regression run completed with no browser console warnings or
    errors.
-10. A visual production-build check at 1280 x 720 confirmed that the tutorial
-    practice surface and gameplay HUD, including pause, gentler support, and
-    optional cue narration plus both volume controls, fit without clipping.
+10. Visual checks at 1280 x 720, 1024 x 720, and 800 x 720 confirmed that the
+    tutorial camera stays horizontally centred and dominant, its overlays do
+    not collide, and the complete practice task fits without page scrolling.
+    A production Chrome pass at 1280, 1024, and 768 px wide also measured the
+    scored playfield at zero horizontal centre offset with no page overflow.
+    Its contained HUD keeps pause, gentler support, optional cue narration, and
+    both volume controls visible without displacing the cue target.
 
 The production bundle was also served through Vite Preview at 1280 x 720 in
 Chrome. After its generated service worker installed the exact bundle,
