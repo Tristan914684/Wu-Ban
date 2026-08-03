@@ -53,9 +53,39 @@ describe("standing movement traces", () => {
   });
 
   it.each([
-    ["step-left", poseFrame({ leftAnkleX: 0.34 })],
-    ["step-right", poseFrame({ rightAnkleX: 0.66 })],
+    ["step-left", poseFrame({ leftAnkleX: 0.38 })],
+    ["step-right", poseFrame({ rightAnkleX: 0.62 })],
   ] as const)("recognizes a %s from foot movement before the hips move", (cue, frame) => {
+    expect(calibration).toBeDefined();
+    if (calibration === undefined) {
+      return;
+    }
+
+    expect(classifyStanding(frame, calibration)).toMatchObject({
+      kind: "movement",
+      cue,
+    });
+  });
+
+  it.each([
+    ["step-left", poseFrame({ hipCenterX: 0.43 })],
+    ["step-right", poseFrame({ hipCenterX: 0.57 })],
+  ] as const)("recognizes a gentle %s when the ankles are not driving the trace", (cue, frame) => {
+    expect(calibration).toBeDefined();
+    if (calibration === undefined) {
+      return;
+    }
+
+    expect(classifyStanding(frame, calibration)).toMatchObject({
+      kind: "movement",
+      cue,
+    });
+  });
+
+  it.each([
+    ["step-forward", poseFrame({ bodyScale: 0.56, shoulderWidth: 0.235 })],
+    ["step-back", poseFrame({ bodyScale: 0.48, shoulderWidth: 0.205 })],
+  ] as const)("recognizes a bounded %s without requiring a large depth change", (cue, frame) => {
     expect(calibration).toBeDefined();
     if (calibration === undefined) {
       return;

@@ -18,14 +18,20 @@ motion; do not drift into a generic dashboard or childish fitness game.
 - Creative world: fibrous rice paper, visible ink edges, painted sunset light,
   lantern targets, and calm public-square geometry.
 - Density: sparse during player flow; balanced on results and supporter views.
-- Hierarchy: the current instruction or cue is primary during setup and scored
-  play. During camera rehearsal, the camera is the central proof surface; the
+- Hierarchy: the current instruction or cue is primary during setup. During
+  scored play, the current cue and the next four to five authored cues share a
+  perspective move runway with a fixed action line. During camera rehearsal,
+  the camera is the central proof surface; the
   current cue, move progress, centre/home guidance, and quality status sit in
   compact overlays rather than displacing it. During scored play, the playfield
   spans the viewport and remains centred beneath a contained peripheral HUD.
-- Component grammar: stable playfield, imperfect ruled sections, status bands,
-  definition lists, a compact Display and comfort disclosure, and one primary
-  action. No interchangeable metric-card grid.
+  A persistent camera-state panel beside the runway makes centred, left,
+  right, forward, back, gesture, and unclear states explicit in text and a
+  position compass.
+- Component grammar: stable playfield, four ruled movement lanes, ordered cue
+  markers, imperfect ruled sections, status bands, definition lists, a compact
+  Display and comfort disclosure, and one primary action. No interchangeable
+  metric-card grid.
 
 ## Type, colour, and material
 
@@ -44,8 +50,9 @@ motion; do not drift into a generic dashboard or childish fitness game.
 ## Interaction decision
 
 - Budget: functional.
-- Techniques: CSS focus/state transitions, bounded cue approach, beat pulse,
-  countdown, and one short result flourish.
+- Techniques: CSS focus/state transitions, audio-clock-derived cue travel on a
+  bounded perspective runway, beat pulse, countdown, and one short result
+  flourish.
 - Library: CSS and the Web Animations/Web Audio platform APIs; no motion
   dependency.
 - Why this fits: the game needs timing and recovery motion, while repeated
@@ -67,6 +74,11 @@ motion; do not drift into a generic dashboard or childish fitness game.
   to the centre marks in standing mode; hands lower beside the shoulders in
   seated mode. Replay and pace controls use the side rails to preserve camera
   height.
+- Scored standing play treats a fresh ankle-first step as a bounded movement
+  event, keeps it available through the brief centre return, and consumes it
+  for at most one cue. The same centre return re-arms the next event. The
+  visible camera-state compass updates only when the semantic position changes
+  and uses short CSS state transitions rather than decorative motion.
 - Rejected: scroll hijacking, smooth scrolling, parallax, custom cursor,
   animated background particles during play, and floating cards.
 
@@ -94,9 +106,9 @@ motion; do not drift into a generic dashboard or childish fitness game.
 
 ## Asset plan
 
-- Needed: lantern cue shapes, community-square key art, movement guide poses,
-  paper/ink texture, model/music notices, and real product screenshots for the
-  submission.
+- Needed: movement-lane cue shapes, community-square key art, movement guide
+  poses, paper/ink texture, model/music notices, and real product screenshots
+  for the submission.
 - Source: CSS for functional cue geometry and paper/ink texture; Miora for
   final environment and guide art after provenance capture; self-hosted
   licensed fonts and models.
@@ -126,4 +138,5 @@ motion; do not drift into a generic dashboard or childish fitness game.
 - Required states: disclosure, loading, permission, denied, tracking lost,
   paused, invalid, result, and simulated.
 - Scan-speed decision: one task and one action per player screen.
-- Memorable anchor: hand-painted lantern cues on fibrous paper at golden dusk.
+- Memorable anchor: a hand-painted movement runway crossing a golden-dusk
+  community square.

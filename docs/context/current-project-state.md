@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 28 July 2026
+**Last verified:** 3 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,8 +21,10 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: 106 unit/component tests, 6 IndexedDB
-  integration/migration tests, and 24 production Chrome E2E tests pass.
+- Automated application tests: 118 unit/component tests and 7 IndexedDB
+  integration/migration tests pass in the current worktree. The 24-test
+  production Chrome suite passed before this gameplay follow-up; the two
+  affected scored-play and Pause/Resume/Stop journeys pass after it.
 - CI: least-privileged GitHub Actions workflow is implemented locally; its
   first remote run remains unverified until the branch is pushed to GitHub.
 - Production deployment: private Sites URL is live at
@@ -91,7 +93,9 @@ file after material verified changes.
 
 ## Evidence status
 
-- Documentation validation, lint, 106 unit/component tests, TypeScript compilation (typecheck), and production Vite build are verified in the current worktree.
+- Documentation validation, lint, 118 unit/component tests, 7 IndexedDB
+  integration tests, TypeScript compilation, production Vite build, and bundle
+  budget are verified in the current worktree.
 - Movement rehearsal features a clean 3-column, single-page layout without text overlays on the camera preview. All move lists, active cue cards, position reset instructions, and tracking readouts live in layout panels around the video. Every movement cue provides clear, explicit movement instructions in both English and Simplified Chinese side-by-side. The entire workspace fits within 100dvh without vertical scrolling.
 - Standing and seated synthetic journeys, bilingual result copy,
   self-reported context exclusion, denied-camera guidance and camera-free
@@ -115,8 +119,10 @@ file after material verified changes.
   live human-device validation remains open.
 - Real-camera landmarks are normalized to the same mirrored player view as the
   visible preview. Standing side steps use ankle displacement first with
-  hip-centre movement as fallback, and the three-second calibration stores an
-  average rather than one final frame. Calibration and movement practice now
+  a bounded hip-centre fallback. Classifier version 2 lowers the entertainment
+  movement thresholds so a gentle intentional ankle step or bounded depth
+  change is sufficient; the three-second calibration still stores an average
+  rather than one final frame. Calibration and movement practice now
   draw the scoreable body/hand landmarks and name the detected parts; rehearsal
   also reports the current classified direction. These changes have automated
   landmark and classifier evidence, but still require a representative human
@@ -132,8 +138,19 @@ file after material verified changes.
   classifier observes a neutral return.
 - Setup screens without a supporting visual now use the full editorial grid
   instead of reserving an empty right column. Split screens keep their visual
-  active at common laptop widths, while the scored playfield spans the viewport
-  and keeps its cue target at the true screen centre beneath a contained HUD.
+  active at common laptop widths, while the scored playfield is bounded to the
+  remaining dynamic viewport height and keeps its cue target at the true screen
+  centre beneath a contained HUD without page-level vertical scrolling.
+- Scored play now presents four stable, mode-specific movement lanes with a
+  fixed action line and four to five ordered upcoming cues. Cue position is
+  derived from the existing audio-clock chart; scoring and narration contracts
+  are unchanged, and every marker retains text, symbol, shape, and lane cues.
+- Scored play now captures each fresh movement as a short-lived event, so a
+  correct step remains countable after the player promptly returns to centre
+  instead of requiring them to hold the pose until cue evaluation. Centre
+  return re-arms the next event and a held pose cannot score twice. A persistent
+  camera-state panel shows centred, left, right, forward, back, seated gesture,
+  and unclear states using plain language plus a five-position compass.
 - The seven primary setup surfaces now respond to both viewport width and
   height. At the 1280 x 720 target, home, disclosure, permission, mode, safety,
   calibration, and movement practice require no page-level vertical scrolling;

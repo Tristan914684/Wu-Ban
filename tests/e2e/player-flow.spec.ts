@@ -1,3 +1,4 @@
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
 async function enterSyntheticMode(page: Page): Promise<void> {
@@ -126,6 +127,50 @@ async function reachStandingAudioStart(page: Page): Promise<void> {
     .click();
 }
 
+test("scored gameplay fills the viewport without page scrolling", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await reachStandingAudioStart(page);
+
+  await expect(
+    page.getByRole("button", { name: "暂停", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "接下来的动作", exact: true }),
+  ).toBeVisible();
+  expect(await page.locator("[data-move-note]").count()).toBeGreaterThanOrEqual(
+    4,
+  );
+  await expect(page.locator("[data-move-note]").first()).toContainText(
+    /向左一步|向右一步|轻轻向前|轻轻退回/,
+  );
+  const playerState = page.locator("[data-player-state]");
+  await expect(playerState).toHaveAttribute("data-player-state", "center");
+  await expect(playerState).toContainText("已在中央");
+  await expect(playerState).toContainText("准备好了；轻轻迈出一步就会计数");
+
+  const accessibility = await new AxeBuilder({ page }).analyze();
+  expect(
+    accessibility.violations,
+    accessibility.violations
+      .map((violation) => `${violation.id}: ${violation.help}`)
+      .join("\n"),
+  ).toEqual([]);
+
+  const dimensions = await page.evaluate<{
+    viewportHeight: number;
+    pageHeight: number;
+  }>(`({
+    viewportHeight: document.documentElement.clientHeight,
+    pageHeight: document.documentElement.scrollHeight,
+  })`);
+
+  expect(dimensions.pageHeight).toBeLessThanOrEqual(
+    dimensions.viewportHeight + 1,
+  );
+});
+
 for (const route of [
   {
     name: "standing",
@@ -189,7 +234,7 @@ test("an unusual-day report preserves the result but excludes the trend", async 
 test("pause, resume, and stop are keyboard reachable during play", async ({
   page,
 }) => {
-  await page.goto("/?fast=1");
+  await page.goto("/");
   await enterSyntheticMode(page);
   await page
     .getByRole("button", {

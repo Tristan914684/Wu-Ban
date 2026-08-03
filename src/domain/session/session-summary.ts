@@ -9,11 +9,10 @@ export interface SessionSummary {
   readonly mode: SessionMode;
   readonly chartId: string;
   readonly chartVersion: 1;
-  readonly classifierVersion: 1;
+  readonly classifierVersion: 1 | 2;
   readonly qualityVersion: 1;
   readonly scoringVersion: 1;
   readonly simulated: boolean;
   readonly score: SessionScore;
   readonly validity: SessionValidity;
 }
-

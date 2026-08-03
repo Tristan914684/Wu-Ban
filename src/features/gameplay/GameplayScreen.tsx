@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 
 import { BrowserCueNarrator } from "../../adapters/audio/browser-cue-narrator";
 import type { BrowserCamera } from "../../adapters/camera/browser-camera";
@@ -20,7 +26,10 @@ import type {
   MovementCue,
   MovementObservation,
 } from "../../domain/movement/landmarks";
-import { frameConfidence } from "../../domain/movement/landmarks";
+import {
+  frameConfidence,
+  MOVEMENT_CLASSIFIER_VERSION,
+} from "../../domain/movement/landmarks";
 import { classifySeated } from "../../domain/movement/seated-classifier";
 import {
   replaySyntheticObservation,
@@ -41,7 +50,14 @@ import {
   makeCueSupportGentler,
   type CueSupportLevel,
 } from "../../domain/gameplay/adaptive-support";
+import {
+  INITIAL_MOVEMENT_CAPTURE_LATCH,
+  observationForCue,
+  updateMovementCaptureLatch,
+  type MovementCaptureLatch,
+} from "../../domain/gameplay/captured-movement";
 import { Button } from "../../ui/primitives/Button";
+import { livePlayerState } from "./live-player-state";
 
 type TrackingIssue = Extract<
   MovementObservation,
@@ -78,6 +94,46 @@ const SECTION_LABELS = {
   memory: ["灯笼记忆", "LANTERN MEMORY"],
 } as const;
 
+const CUE_LANES: Record<MovementCue, number> = {
+  "step-left": 0,
+  "step-forward": 1,
+  "step-back": 2,
+  "step-right": 3,
+  "left-palm": 0,
+  "both-palms": 1,
+  "index-hold": 2,
+  "right-palm": 3,
+};
+
+const CUE_SYMBOLS: Record<MovementCue, string> = {
+  "step-left": "←",
+  "step-forward": "↑",
+  "step-back": "↓",
+  "step-right": "→",
+  "left-palm": "左",
+  "both-palms": "双",
+  "index-hold": "指",
+  "right-palm": "右",
+};
+
+const LANE_LABELS = {
+  standing: [
+    ["向左", "LEFT"],
+    ["向前", "FORWARD"],
+    ["退回", "BACK"],
+    ["向右", "RIGHT"],
+  ],
+  seated: [
+    ["左掌", "LEFT PALM"],
+    ["双掌", "BOTH"],
+    ["食指", "INDEX"],
+    ["右掌", "RIGHT PALM"],
+  ],
+} as const;
+
+const RUNWAY_LANE_TOP = [39.5, 46.5, 53.5, 60.5] as const;
+const RUNWAY_LANE_BOTTOM = [14, 38, 62, 86] as const;
+
 function cueLabel(language: Language, cue: MovementCue | null): string {
   const labels: Record<MovementCue, readonly [string, string]> = {
     "step-left": ["向左一步", "Step left"],
@@ -93,6 +149,31 @@ function cueLabel(language: Language, cue: MovementCue | null): string {
     return language === "zh" ? "停住" : "HOLD";
   }
   return labels[cue][language === "zh" ? 0 : 1];
+}
+
+function cueRunwayStyle(
+  cue: SessionCue,
+  elapsedMs: number,
+  lookaheadMs: number,
+): CSSProperties {
+  const progress = Math.max(
+    0,
+    Math.min(1, 1 - (cue.atMs - elapsedMs) / lookaheadMs),
+  );
+  const lane = cue.expected === null ? null : CUE_LANES[cue.expected];
+  const laneTop = lane === null ? 50 : (RUNWAY_LANE_TOP[lane] ?? 50);
+  const laneBottom = lane === null ? 50 : (RUNWAY_LANE_BOTTOM[lane] ?? 50);
+  const left =
+    lane === null
+      ? 50
+      : laneTop + (laneBottom - laneTop) * progress;
+
+  return {
+    left: `${left}%`,
+    top: `${8 + progress * 72}%`,
+    opacity: 0.52 + progress * 0.48,
+    transform: `translate(-50%, -50%) scale(${0.58 + progress * 0.42})`,
+  };
 }
 
 function observationToAttempt(
@@ -133,10 +214,9 @@ export function GameplayScreen({
   const attemptsRef = useRef<CueAttempt[]>([]);
   const attemptedIdsRef = useRef(new Set<string>());
   const lastObservationRef = useRef<MovementObservation>({ kind: "neutral" });
-  const lastDetectedMovementRef = useRef<{
-    readonly cue: MovementCue;
-    readonly atMs: number;
-  } | null>(null);
+  const movementCaptureRef = useRef<MovementCaptureLatch>(
+    INITIAL_MOVEMENT_CAPTURE_LATCH,
+  );
   const lastAdaptationAtRef = useRef(0);
   const completedRef = useRef(false);
   const trackingLostAtRef = useRef<number | null>(null);
@@ -165,6 +245,8 @@ export function GameplayScreen({
     confidence: 0,
   });
   const [detectedAction, setDetectedAction] = useState("neutral");
+  const [liveObservation, setLiveObservation] =
+    useState<MovementObservation>({ kind: "neutral" });
   const [provisionalValid, setProvisionalValid] = useState(false);
   const [feedback, setFeedback] = useState(
     language === "zh" ? "跟着灯笼来" : "Follow the lantern",
@@ -184,6 +266,22 @@ export function GameplayScreen({
           cue.atMs <= elapsedMs + cuePreviewMs,
       ),
     [chart.cues, cuePreviewMs, elapsedMs],
+  );
+  const cueIntervalMs = Math.max(
+    1,
+    (chart.cues[1]?.atMs ?? 2_000) - (chart.cues[0]?.atMs ?? 0),
+  );
+  const runwayLookaheadMs = cueIntervalMs * 5;
+  const runwayCues = useMemo(
+    () =>
+      chart.cues
+        .filter(
+          (cue) =>
+            cue.atMs >= elapsedMs - 500 &&
+            cue.atMs <= elapsedMs + runwayLookaheadMs,
+        )
+        .slice(0, 5),
+    [chart.cues, elapsedMs, runwayLookaheadMs],
   );
 
   useEffect(() => {
@@ -275,8 +373,21 @@ export function GameplayScreen({
         timestampMs: number,
         elapsed: number,
       ) => {
-        const previousObservation = lastObservationRef.current;
         lastObservationRef.current = observation;
+        setLiveObservation((current) => {
+          if (
+            current.kind === observation.kind &&
+            (current.kind !== "movement" ||
+              (observation.kind === "movement" &&
+                current.cue === observation.cue)) &&
+            (current.kind !== "unscoreable" ||
+              (observation.kind === "unscoreable" &&
+                current.reason === observation.reason))
+          ) {
+            return current;
+          }
+          return observation;
+        });
         if (debugEnabled) {
           setDetectedAction(
             observation.kind === "movement"
@@ -284,16 +395,11 @@ export function GameplayScreen({
               : observation.kind,
           );
         }
-        if (
-          observation.kind === "movement" &&
-          (previousObservation.kind !== "movement" ||
-            previousObservation.cue !== observation.cue)
-        ) {
-          lastDetectedMovementRef.current = {
-            cue: observation.cue,
-            atMs: elapsed,
-          };
-        }
+        movementCaptureRef.current = updateMovementCaptureLatch(
+          movementCaptureRef.current,
+          observation,
+          elapsed,
+        );
 
         if (observation.kind === "unscoreable") {
           setTrackingIssue(observation.reason);
@@ -430,9 +536,13 @@ export function GameplayScreen({
                       index,
                       elapsed,
                     )
-                : lastObservationRef.current;
+                : observationForCue(
+                    lastObservationRef.current,
+                    movementCaptureRef.current.latest,
+                    cue.atMs,
+                  );
             const syntheticOffsets = [120, 340, -180, 520] as const;
-            const detectedMovement = lastDetectedMovementRef.current;
+            const detectedMovement = movementCaptureRef.current.latest;
             const timingOffset =
               source === "synthetic"
                 ? syntheticOffsets[index % syntheticOffsets.length] ?? 0
@@ -448,6 +558,12 @@ export function GameplayScreen({
               observation,
               timingOffset,
             );
+            if (source === "camera") {
+              movementCaptureRef.current = {
+                ...movementCaptureRef.current,
+                latest: null,
+              };
+            }
             attemptedIdsRef.current.add(cue.id);
             if (cue.section === "warmup") {
               setFeedback(
@@ -563,7 +679,10 @@ export function GameplayScreen({
   };
 
   const progress = Math.min(1, elapsedMs / chart.durationMs);
-  const currentSection = visibleCue?.section ?? "warmup";
+  const currentSection =
+    visibleCue?.section ?? runwayCues[0]?.section ?? "warmup";
+  const laneLabels = LANE_LABELS[mode];
+  const playerState = livePlayerState(language, mode, liveObservation);
   return (
     <main className="gameplay-screen">
       <section
@@ -584,24 +703,118 @@ export function GameplayScreen({
           <div className="gameplay-stage__paper" aria-hidden="true" />
         )}
         <div className="gameplay-stage__shade" aria-hidden="true" />
-        <div className="lantern-target" aria-hidden="true">
-          <span />
-        </div>
+        <section
+          aria-label={isChinese ? "接下来的动作" : "Upcoming moves"}
+          className="move-runway"
+          data-move-runway
+        >
+          <div className="move-runway__heading" aria-hidden="true">
+            <span>{isChinese ? "接下来" : "UP NEXT"}</span>
+            <strong>{isChinese ? "动作跑道" : "MOVE RUNWAY"}</strong>
+          </div>
+          <div className="move-runway__track" aria-hidden="true">
+            <svg
+              className="move-runway__lines"
+              preserveAspectRatio="none"
+              viewBox="0 0 1000 700"
+            >
+              <path d="M360 0 L20 700" />
+              <path d="M430 0 L260 700" />
+              <path d="M500 0 L500 700" />
+              <path d="M570 0 L740 700" />
+              <path d="M640 0 L980 700" />
+            </svg>
+            <div className="move-runway__hit-line">
+              <span>{isChinese ? "现在做" : "MOVE NOW"}</span>
+            </div>
+            {runwayCues.map((cue, index) => {
+              const lane =
+                cue.expected === null ? "hold" : CUE_LANES[cue.expected];
+              const isCurrent = Math.abs(cue.atMs - elapsedMs) <= 500;
+              return (
+                <div
+                  className={`move-note move-note--lane-${lane}`}
+                  data-current={isCurrent ? "true" : "false"}
+                  data-move-note
+                  key={cue.id}
+                  style={cueRunwayStyle(
+                    cue,
+                    elapsedMs,
+                    runwayLookaheadMs,
+                  )}
+                >
+                  <span className="move-note__order">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="move-note__symbol">
+                    {cue.expected === null
+                      ? "—"
+                      : CUE_SYMBOLS[cue.expected]}
+                  </span>
+                  <strong>{cueLabel(language, cue.expected)}</strong>
+                </div>
+              );
+            })}
+            <div className="move-runway__lane-labels">
+              {laneLabels.map((label) => (
+                <span key={label[1]}>{label[isChinese ? 0 : 1]}</span>
+              ))}
+            </div>
+          </div>
+          <ol className="visually-hidden">
+            {runwayCues.map((cue, index) => (
+              <li key={cue.id}>
+                {isChinese ? `第 ${index + 1} 个：` : `Next ${index + 1}: `}
+                {cueLabel(language, cue.expected)}
+              </li>
+            ))}
+          </ol>
+        </section>
         {visibleCue === undefined ? (
-          <p className="cue-title">{isChinese ? "准备下一个" : "Next cue"}</p>
+          <p className="current-cue-title">
+            {isChinese ? "看跑道，准备下一个" : "Watch the runway"}
+          </p>
         ) : (
-          <div
-            className={`approaching-cue approaching-cue--${visibleCue.expected ?? "hold"}`}
-            key={visibleCue.id}
-            style={{ animationDuration: `${cuePreviewMs}ms` }}
-          >
-            <span aria-hidden="true" />
+          <div className="current-cue-title" key={visibleCue.id}>
+            <span>{isChinese ? "当前动作" : "CURRENT MOVE"}</span>
             <strong>{cueLabel(language, visibleCue.expected)}</strong>
           </div>
         )}
         <div className="gameplay-feedback" aria-live="polite">
           {feedback}
         </div>
+        <section
+          aria-atomic="true"
+          aria-live="polite"
+          className="live-player-state"
+          data-player-state={playerState.key}
+        >
+          <span className="live-player-state__eyebrow">
+            {isChinese ? "摄像头看到" : "CAMERA SEES"}
+          </span>
+          <div className="live-player-state__content">
+            {mode === "standing" ? (
+              <div
+                aria-hidden="true"
+                className="live-player-state__compass"
+              >
+                <span data-position="step-forward">↑</span>
+                <span data-position="step-left">←</span>
+                <span data-position="center">●</span>
+                <span data-position="step-right">→</span>
+                <span data-position="step-back">↓</span>
+              </div>
+            ) : (
+              <span aria-hidden="true" className="live-player-state__symbol">
+                {playerState.symbol}
+              </span>
+            )}
+            <div>
+              <strong>{playerState.label}</strong>
+              <span>{playerState.helper}</span>
+            </div>
+          </div>
+        </section>
         {playback === "tracking-lost" ? (
           <div className="tracking-overlay" role="status">
             <strong>
@@ -670,23 +883,25 @@ export function GameplayScreen({
             </dd>
           </div>
         </dl>
-        <Button onClick={() => void togglePause()} variant="secondary">
-          {playback === "paused"
-            ? isChinese
-              ? "继续"
-              : "Resume"
-            : isChinese
-              ? "暂停"
-              : "Pause"}
-        </Button>
-        <Button
-          onClick={() => {
-            setCueSupport((current) => makeCueSupportGentler(current));
-          }}
-          variant="quiet"
-        >
-          {isChinese ? "让提示更温和" : "Make it gentler"}
-        </Button>
+        <div className="gameplay-hud__actions">
+          <Button onClick={() => void togglePause()} variant="secondary">
+            {playback === "paused"
+              ? isChinese
+                ? "继续"
+                : "Resume"
+              : isChinese
+                ? "暂停"
+                : "Pause"}
+          </Button>
+          <Button
+            onClick={() => {
+              setCueSupport((current) => makeCueSupportGentler(current));
+            }}
+            variant="quiet"
+          >
+            {isChinese ? "让提示更温和" : "Make it gentler"}
+          </Button>
+        </div>
         <div className="volume-controls">
           <label className="voice-guidance-toggle">
             <input
@@ -766,7 +981,10 @@ export function GameplayScreen({
             </div>
             <div>
               <dt>versions</dt>
-              <dd>pose 1 · score 1 · quality 1 · chart {chart.version}</dd>
+              <dd>
+                classifier {MOVEMENT_CLASSIFIER_VERSION} · score 1 · quality 1
+                · chart {chart.version}
+              </dd>
             </div>
           </dl>
         ) : null}

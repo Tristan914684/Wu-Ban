@@ -10,6 +10,7 @@ export interface NormalizedLandmark {
 // measured brightness threshold. Keep provider, classifiers, and debug UI
 // aligned when testing a different value on the demo device.
 export const TRACKING_CONFIDENCE_THRESHOLD = 0.45;
+export const MOVEMENT_CLASSIFIER_VERSION = 2 as const;
 
 export interface PoseFrame {
   readonly kind: "pose";

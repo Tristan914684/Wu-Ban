@@ -125,6 +125,8 @@ tracking lost, paused, invalid, success, and synthetic.
 - Simulated/test behavior: separate adapter and explicit metadata; accelerated
   timing only under a visible synthetic test configuration.
 - Versioning: chart, classifier, quality, scoring, and summary schema versions.
+  Classifier version 2 identifies the forgiving gentle-step thresholds and
+  one-cue event-capture behavior; stored version-1 summaries remain readable.
 
 ## Safety, privacy, and accessibility
 
