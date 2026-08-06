@@ -72,6 +72,22 @@ describe("IndexedDB session repository", () => {
     expect(await repository.list()).toEqual([]);
   });
 
+  it("preserves current classifier summaries while keeping version 1 readable", async () => {
+    const currentSummary: SessionSummary = {
+      ...summary,
+      sessionId: "session-classifier-v2",
+      classifierVersion: 2,
+    };
+    await repository.save(summary);
+    await repository.save(currentSummary);
+
+    const stored = await repository.list();
+
+    expect(
+      stored.map((record) => record.classifierVersion).sort(),
+    ).toEqual([1, 2]);
+  });
+
   it("ignores malformed summaries and strips unexpected stored fields", async () => {
     await repository.save(summary);
     await storeRawSession({

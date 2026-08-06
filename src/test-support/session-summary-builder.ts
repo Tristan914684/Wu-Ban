@@ -1,6 +1,7 @@
 import type { SessionMode } from "../domain/chart/session-chart";
 import type { SessionMeasures } from "../domain/scoring/session-score";
 import type { SessionSummary } from "../domain/session/session-summary";
+import { MOVEMENT_CLASSIFIER_VERSION } from "../domain/movement/landmarks";
 
 const defaultMeasures: SessionMeasures = {
   beatAccuracy: 0.85,
@@ -28,7 +29,7 @@ export function buildSessionSummary(
     mode: overrides.mode ?? "standing",
     chartId: "test-chart",
     chartVersion: 1,
-    classifierVersion: 1,
+    classifierVersion: MOVEMENT_CLASSIFIER_VERSION,
     qualityVersion: 1,
     scoringVersion: 1,
     simulated: overrides.simulated ?? false,
@@ -47,4 +48,3 @@ export function buildSessionSummary(
     },
   };
 }
-

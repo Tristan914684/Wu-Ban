@@ -127,6 +127,32 @@ code {
   min-height: 100svh;
 }
 
+.app-shell[data-phase="playing"] {
+  display: grid;
+  height: 100svh;
+  min-height: 0;
+  grid-template-rows: var(--app-header-height) minmax(0, 1fr);
+  overflow: hidden;
+}
+
+@supports (height: 100dvh) {
+  .app-shell[data-phase="playing"] {
+    height: 100dvh;
+  }
+}
+
+.app-shell[data-phase="playing"] .app-header {
+  min-height: 0;
+  height: var(--app-header-height);
+}
+
+.app-shell[data-phase="playing"] .app-content,
+.app-shell[data-phase="playing"] .gameplay-screen {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 .app-header {
   position: relative;
   z-index: 20;
@@ -1776,10 +1802,6 @@ code {
   display: grid;
   --game-hud-offset: clamp(12px, 2vw, 24px);
   --game-hud-width: min(320px, 28vw);
-  --game-cue-right-edge: calc(
-    100% - var(--game-hud-width) - var(--game-hud-offset) -
-      clamp(48px, 4.5vw, 64px)
-  );
   min-height: calc(100svh - var(--app-header-height));
   min-height: calc(100dvh - var(--app-header-height));
   grid-template-columns: minmax(0, 1fr);
@@ -1824,127 +1846,393 @@ code {
   );
 }
 
-.lantern-target {
+.move-runway {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  display: grid;
-  width: clamp(116px, 14vw, 180px);
-  aspect-ratio: 1;
-  place-items: center;
-  border: 3px solid #f6e4bc;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 14px rgb(107 31 31 / 28%),
-    0 0 50px rgb(247 220 158 / 35%);
-  transform: translate(-50%, -50%);
+  inset: 2% max(calc(var(--game-hud-width) + 2 * var(--game-hud-offset)), 24%) 3%
+    clamp(220px, 19vw, 340px);
+  z-index: 3;
+  min-width: 0;
+  pointer-events: none;
 }
 
-.lantern-target span {
-  width: 54%;
-  aspect-ratio: 1;
-  border: 2px solid #f6e4bc;
-  border-radius: 50%;
-}
-
-.approaching-cue {
+.move-runway__heading {
   position: absolute;
-  top: 10%;
+  top: 0;
   left: 50%;
+  z-index: 4;
   display: grid;
+  min-width: 150px;
   justify-items: center;
-  gap: 10px;
+  padding: 5px 16px 7px;
+  color: var(--ink);
+  background: var(--paper-light);
+  box-shadow: 3px 4px 0 rgb(26 22 20 / 72%);
+  line-height: 1;
+  transform: translateX(-50%) rotate(-0.5deg);
+}
+
+.move-runway__heading span {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.move-runway__heading strong {
+  margin-top: 4px;
+  font-family: "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: clamp(15px, 1.4vw, 20px);
+  font-weight: 720;
+}
+
+.move-runway__track {
+  position: absolute;
+  inset: 38px 0 0;
+  overflow: hidden;
+}
+
+.move-runway__track::before {
+  position: absolute;
+  inset: 0;
+  border-bottom: 4px solid rgb(246 228 188 / 82%);
+  background:
+    linear-gradient(to bottom, rgb(26 22 20 / 48%), rgb(26 22 20 / 82%)),
+    repeating-linear-gradient(
+      -4deg,
+      transparent 0 24px,
+      rgb(246 228 188 / 5%) 25px 27px
+    );
+  clip-path: polygon(36% 0, 64% 0, 100% 100%, 0 100%);
+  content: "";
+}
+
+.move-runway__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  opacity: 0.82;
+  stroke: #f6e4bc;
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.move-runway__hit-line {
+  position: absolute;
+  top: 80%;
+  right: 3%;
+  left: 3%;
+  z-index: 2;
+  height: 5px;
+  background: var(--paper-light);
+  box-shadow:
+    0 0 0 5px rgb(107 31 31 / 72%),
+    0 0 24px rgb(246 228 188 / 45%);
+}
+
+.move-runway__hit-line span {
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  padding: 4px 11px;
+  color: var(--paper-light);
+  background: var(--accent);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.move-note {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  width: clamp(82px, 8vw, 116px);
+  justify-items: center;
   color: var(--paper-light);
   text-align: center;
-  transform: translate(-50%, 0);
-  animation: cue-approach 1.55s cubic-bezier(0.2, 0, 0, 1) forwards;
+  transition:
+    top 100ms linear,
+    left 100ms linear,
+    opacity 100ms linear,
+    transform 100ms linear;
 }
 
-.approaching-cue--step-left,
-.approaching-cue--left-palm {
-  top: 50%;
-  left: 12%;
-  animation-name: cue-approach-left;
+.move-note__order {
+  position: absolute;
+  top: -8px;
+  left: -2px;
+  z-index: 2;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid var(--paper-light);
+  border-radius: 50%;
+  color: var(--ink);
+  background: var(--paper-light);
+  font-size: 9px;
+  font-weight: 850;
 }
 
-.approaching-cue--step-right,
-.approaching-cue--right-palm {
-  top: 50%;
-  left: min(88%, var(--game-cue-right-edge));
-  animation-name: cue-approach-right;
+.move-note__symbol {
+  display: grid;
+  width: clamp(54px, 5.4vw, 78px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 3px solid var(--paper-light);
+  border-radius: 50%;
+  background: var(--jade);
+  box-shadow:
+    inset 0 0 0 7px rgb(26 22 20 / 20%),
+    0 5px 0 rgb(26 22 20 / 62%);
+  font-family: "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: clamp(27px, 3vw, 42px);
+  font-weight: 850;
+  line-height: 1;
 }
 
-.approaching-cue--step-back,
-.approaching-cue--index-hold {
-  top: 82%;
-  animation-name: cue-approach-bottom;
+.move-note strong {
+  max-width: 12ch;
+  margin-top: 5px;
+  padding: 3px 7px;
+  color: var(--paper-light);
+  background: rgb(26 22 20 / 92%);
+  font-size: clamp(12px, 1.2vw, 17px);
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-.approaching-cue--hold {
+.move-note--lane-1 .move-note__symbol {
+  border-radius: 48% 48% 14% 14%;
+  background: var(--gold);
+}
+
+.move-note--lane-2 .move-note__symbol {
+  border-radius: 6px 3px 7px 4px;
+  background: #b56a45;
+}
+
+.move-note--lane-3 .move-note__symbol {
+  border-radius: 14% 48% 48% 14%;
+  background: var(--accent-bright);
+}
+
+.move-note--lane-hold {
+  width: min(64%, 480px);
+}
+
+.move-note--lane-hold .move-note__symbol {
+  width: 100%;
+  aspect-ratio: auto;
+  border-radius: 4px 2px 5px 3px;
+  background: #e7c36d;
   color: var(--ink);
 }
 
-.approaching-cue span {
-  width: clamp(72px, 8vw, 104px);
-  height: clamp(86px, 9vw, 118px);
-  border: 3px solid #f6e4bc;
-  border-radius: 44% 44% 36% 36%;
-  background: var(--accent-bright);
-  box-shadow:
-    inset 0 0 0 10px rgb(247 220 158 / 16%),
-    0 12px 30px rgb(26 22 20 / 25%);
+.move-note[data-current="true"] {
+  filter: drop-shadow(0 0 12px rgb(246 228 188 / 90%));
 }
 
-.approaching-cue--hold span {
-  border-color: var(--ink);
-  background: #e7c36d;
+.move-note[data-current="true"] .move-note__order {
+  color: var(--paper-light);
+  background: var(--accent);
 }
 
-.approaching-cue strong {
-  padding: 5px 9px;
-  background: rgb(26 22 20 / 82%);
-  font-size: clamp(20px, 2vw, 30px);
+.move-runway__lane-labels {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
 }
 
-@keyframes cue-approach {
-  to {
-    top: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
+.move-runway__lane-labels span {
+  padding: 8px 4px;
+  border-top: 3px solid var(--paper-light);
+  color: var(--paper-light);
+  background: rgb(26 22 20 / 88%);
+  font-size: clamp(11px, 1vw, 14px);
+  font-weight: 800;
+  text-align: center;
 }
 
-@keyframes cue-approach-left {
-  to {
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
+.current-cue-title {
+  position: absolute;
+  top: clamp(22px, 3vw, 46px);
+  left: clamp(20px, 3vw, 48px);
+  z-index: 5;
+  display: grid;
+  margin: 0;
+  padding: 9px 13px;
+  color: var(--paper-light);
+  background: rgb(26 22 20 / 88%);
+  font-size: clamp(16px, 1.5vw, 22px);
 }
 
-@keyframes cue-approach-right {
-  to {
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
+.current-cue-title span {
+  color: #e9bd69;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
 }
 
-@keyframes cue-approach-bottom {
-  to {
-    top: 50%;
-    transform: translate(-50%, -50%) scale(0.8);
-  }
+.current-cue-title strong {
+  margin-top: 2px;
+  font-family: "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: clamp(26px, 3vw, 44px);
+  line-height: 1.05;
 }
 
 .gameplay-feedback {
   position: absolute;
-  bottom: 24px;
-  left: 50%;
+  top: clamp(124px, 18dvh, 172px);
+  left: clamp(20px, 3vw, 48px);
+  z-index: 5;
   min-width: 260px;
+  max-width: min(28vw, 360px);
   padding: 12px 18px;
   color: var(--paper-light);
   background: rgb(26 22 20 / 82%);
   font-size: 20px;
-  text-align: center;
-  transform: translateX(-50%);
+  text-align: left;
+}
+
+.live-player-state {
+  position: absolute;
+  bottom: clamp(22px, 4dvh, 38px);
+  left: clamp(20px, 3vw, 48px);
+  z-index: 6;
+  width: clamp(220px, 18vw, 300px);
+  padding: 12px 14px 14px;
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  background: rgb(241 236 226 / 95%);
+  box-shadow: 5px 6px 0 rgb(26 22 20 / 58%);
+  transform: rotate(-0.35deg);
+}
+
+.live-player-state__eyebrow {
+  display: block;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.18em;
+}
+
+.live-player-state__content {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  padding-top: 9px;
+}
+
+.live-player-state__content > div:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+.live-player-state__content strong {
+  font-family: "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: clamp(24px, 2vw, 30px);
+  line-height: 1.05;
+}
+
+.live-player-state__content > div:last-child > span {
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.28;
+}
+
+.live-player-state__compass {
+  display: grid;
+  width: 74px;
+  height: 74px;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  place-items: center;
+  color: #87796b;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.live-player-state__compass span {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid var(--rule);
+  background: var(--paper-light);
+  line-height: 1;
+  transition:
+    color 120ms cubic-bezier(0.2, 0, 0, 1),
+    background-color 120ms cubic-bezier(0.2, 0, 0, 1),
+    transform 120ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.live-player-state__compass [data-position="step-forward"] {
+  grid-area: 1 / 2;
+}
+
+.live-player-state__compass [data-position="step-left"] {
+  grid-area: 2 / 1;
+}
+
+.live-player-state__compass [data-position="center"] {
+  grid-area: 2 / 2;
+  border-radius: 50%;
+}
+
+.live-player-state__compass [data-position="step-right"] {
+  grid-area: 2 / 3;
+}
+
+.live-player-state__compass [data-position="step-back"] {
+  grid-area: 3 / 2;
+}
+
+.live-player-state[data-player-state="center"]
+  [data-position="center"],
+.live-player-state[data-player-state="step-left"]
+  [data-position="step-left"],
+.live-player-state[data-player-state="step-right"]
+  [data-position="step-right"],
+.live-player-state[data-player-state="step-forward"]
+  [data-position="step-forward"],
+.live-player-state[data-player-state="step-back"]
+  [data-position="step-back"] {
+  border-color: var(--ink);
+  color: var(--paper-light);
+  background: var(--jade);
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: scale(1.16);
+}
+
+.live-player-state[data-player-state="unclear"] {
+  border-color: #9e642f;
+  background: #f4dfad;
+}
+
+.live-player-state__symbol {
+  display: grid;
+  width: 78px;
+  height: 78px;
+  place-items: center;
+  border: 3px solid var(--ink);
+  border-radius: 50%;
+  color: var(--paper-light);
+  background: var(--jade);
+  font-family: "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: 36px;
+  font-weight: 850;
 }
 
 .tracking-overlay {
@@ -1982,7 +2270,7 @@ code {
   min-width: 0;
   flex-direction: column;
   overflow-y: auto;
-  padding: clamp(24px, 2.4vw, 36px);
+  padding: clamp(16px, 1.8vw, 24px);
   border: 1px solid rgb(250 246 237 / 22%);
   color: var(--paper-light);
   background: rgb(38 33 30 / 94%);
@@ -1991,15 +2279,15 @@ code {
 
 .gameplay-hud h1 {
   max-width: 7ch;
-  margin-block: auto 24px;
+  margin: 6px 0 14px;
   color: var(--paper-light);
-  font-size: clamp(44px, 5vw, 74px);
+  font-size: clamp(38px, min(4.2vw, 7dvh), 60px);
 }
 
 .gameplay-hud label {
   display: grid;
   gap: 8px;
-  margin-bottom: 28px;
+  margin-bottom: 12px;
 }
 
 .gameplay-hud progress {
@@ -2010,33 +2298,48 @@ code {
 }
 
 .gameplay-hud dl {
-  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 12px;
   border-top: 1px solid #62584e;
 }
 
 .gameplay-hud dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 0;
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  padding: 8px 6px;
   border-bottom: 1px solid #62584e;
 }
 
 .gameplay-hud dd {
   margin: 0;
-  text-align: right;
+  font-size: 13px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.gameplay-hud__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .gameplay-hud .button {
+  min-width: 0;
   width: 100%;
+  min-height: 46px;
+  padding: 8px 10px;
   color: var(--paper-light);
   border-color: var(--paper-light);
+  font-size: 14px;
 }
 
 .volume-controls {
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 5px;
+  margin-top: 10px;
 }
 
 .gameplay-hud .volume-controls label {
@@ -2045,7 +2348,7 @@ code {
   align-items: center;
   gap: 12px;
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .gameplay-hud .voice-guidance-toggle {

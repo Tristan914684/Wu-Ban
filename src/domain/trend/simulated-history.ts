@@ -1,6 +1,7 @@
 import type { SessionMode } from "../chart/session-chart";
 import type { SessionMeasures } from "../scoring/session-score";
 import type { SessionSummary } from "../session/session-summary";
+import { MOVEMENT_CLASSIFIER_VERSION } from "../movement/landmarks";
 
 const BASELINE_VALUES = [0.86, 0.83, 0.88, 0.85, 0.84] as const;
 
@@ -18,7 +19,7 @@ function summary(
     mode,
     chartId: `${mode}-mvp-chart`,
     chartVersion: 1,
-    classifierVersion: 1,
+    classifierVersion: MOVEMENT_CLASSIFIER_VERSION,
     qualityVersion: 1,
     scoringVersion: 1,
     simulated: true,
@@ -80,4 +81,3 @@ export function createSimulatedTrendHistory(
 
   return [...baseline, ...recent];
 }
-

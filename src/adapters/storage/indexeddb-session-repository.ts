@@ -72,7 +72,7 @@ function parseSessionSummary(value: unknown): SessionSummary | null {
     typeof value.chartId !== "string" ||
     value.chartId.length === 0 ||
     value.chartVersion !== 1 ||
-    value.classifierVersion !== 1 ||
+    (value.classifierVersion !== 1 && value.classifierVersion !== 2) ||
     value.qualityVersion !== 1 ||
     value.scoringVersion !== 1 ||
     typeof value.simulated !== "boolean" ||
@@ -127,7 +127,7 @@ function parseSessionSummary(value: unknown): SessionSummary | null {
     mode: value.mode,
     chartId: value.chartId,
     chartVersion: 1,
-    classifierVersion: 1,
+    classifierVersion: value.classifierVersion,
     qualityVersion: 1,
     scoringVersion: 1,
     simulated: value.simulated,

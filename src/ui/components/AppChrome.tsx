@@ -87,6 +87,7 @@ export function AppChrome({
   return (
     <div
       className="app-shell"
+      data-phase={phase}
       data-reduced-motion={reducedMotion ? "true" : "false"}
     >
       <header className="app-header">

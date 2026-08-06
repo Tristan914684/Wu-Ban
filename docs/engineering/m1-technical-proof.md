@@ -117,8 +117,8 @@ The first deterministic trace suite must cover:
 
 | Mode | Cue | Provider-neutral evidence |
 |---|---|---|
-| Standing | `step-left` | Hip centre translates left relative to calibrated stance while visibility is scoreable. |
-| Standing | `step-right` | Hip centre translates right relative to calibrated stance while visibility is scoreable. |
+| Standing | `step-left` | Left ankle translates from the calibrated stance, with bounded hip-centre translation as fallback, while visibility is scoreable. |
+| Standing | `step-right` | Right ankle translates from the calibrated stance, with bounded hip-centre translation as fallback, while visibility is scoreable. |
 | Standing | `step-forward` | Calibrated shoulder/hip scale and foot placement indicate bounded approach. |
 | Standing | `step-back` | Calibrated shoulder/hip scale and foot placement indicate bounded retreat. |
 | Seated | `left-palm` | Scoreable left hand with extended fingers in its cue region. |
@@ -129,6 +129,12 @@ The first deterministic trace suite must cover:
 Low-confidence frames are unscoreable. Human-trace confusion evidence may
 replace front/back cues before M2 is called complete; it cannot silently change
 the chart vocabulary.
+
+Classifier version 2 uses deliberately forgiving entertainment thresholds for
+gentle ankle-led side steps and bounded depth changes. A newly detected event
+can satisfy one nearby cue after the player returns to centre; the return is
+still required before another event can be captured. These are automated trace
+contracts, not representative-human or demo-device accuracy evidence.
 
 ## Remaining evidence
 

@@ -6,10 +6,19 @@ import {
   type PoseFrame,
 } from "./landmarks";
 
+<<<<<<< HEAD
 const FOOT_SIDE_THRESHOLD = 0.12;
 const HIP_SIDE_THRESHOLD = 0.18;
 const DEPTH_THRESHOLD = 0.11;
 const FOOT_DEPTH_THRESHOLD = 0.11;
+=======
+// These are intentionally forgiving entertainment thresholds. An ankle moving
+// roughly three percent of the camera frame from its calibrated position is a
+// step; the player does not need to shift their whole torso to prove it.
+const FOOT_SIDE_THRESHOLD = 0.06;
+const HIP_SIDE_THRESHOLD = 0.12;
+const DEPTH_THRESHOLD = 0.07;
+>>>>>>> a9663030fa08b3cb2658b12e0fe89daa6445b060
 
 export interface StandingCalibration {
   readonly hipCenterX: number;

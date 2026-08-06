@@ -2,7 +2,7 @@
 
 **Status:** Active evidence record; locally verified, demo-device gates open  
 **Owner:** Product and gameplay engineering  
-**Last verified:** 28 July 2026
+**Last verified:** 3 August 2026
 **Reference when:** Changing or reporting the consent-to-result player journey.  
 **Agent obligation:** Keep automated, simulated, local-browser, real-camera,
 demo-device, and deployed evidence distinct.
@@ -25,6 +25,9 @@ The browser application implements:
 - mirrored player-facing landmark normalization, averaged standing
   calibration, ankle-first side-step recognition with hip-centre fallback,
   and visible body/hand landmark diagnostics during calibration and rehearsal;
+- forgiving classifier-version-2 standing thresholds, one-cue movement-event
+  capture through a prompt centre return, and a persistent scored-play compass
+  naming the live centred/directional/unclear camera state;
 - an unscored warm-up followed by the authored Follow, Rhythm, and
   Memory/no-go durations;
 - deterministic bounded preview support, an always-available gentler action,
@@ -72,21 +75,23 @@ Node.js `24.18.0` and npm `11.16.0`:
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 34 files, 103 tests passed |
-| `npm run test:integration` | 3 files, 6 tests passed |
+| `npm test` | 36 files, 118 tests passed |
+| `npm run test:integration` | 3 files, 7 tests passed |
 | `npm run build` | Vite production build passed |
-| `npm run test:e2e` | 4 files, 24 Chrome tests passed |
+| `npm run test:e2e` | 24-test suite passed before this follow-up; 2 affected Chrome tests passed afterward |
 | `npm run docs:validate` | 94 documentation files and 2 entrypoints passed |
 
-For the seated-hand confidence fix and rehearsal-layout/copy follow-up,
-documentation validation, lint, 106 unit/component tests, and 6 IndexedDB
-integration/migration tests passed in the current worktree. The full gate
-stopped at an unrelated in-progress `StepLayoutProps` mismatch, so typecheck,
-production build, and E2E were not reverified after these changes.
+For the movement-runway, gentle-step, and live-position follow-ups,
+documentation validation, lint, 118 unit/component tests, 7 IndexedDB
+integration/migration tests, TypeScript compilation, and the production build
+pass in the current worktree. Focused production Chrome checks cover the
+scored-play viewport and Pause/Resume/Stop journey; demo-device camera evidence
+remains open.
 
 The tests cover player-facing coordinate normalization, hand-landmark
 confidence translation, ankle-first standing side steps, calibration-window
-averaging, visible landmark diagnostics,
+averaging, gentle-step and bounded-depth thresholds, one-cue movement-event
+capture, centre-return re-arming, visible landmark diagnostics,
 tutorial centre-return latching, camera-first hierarchy, wide/split step-layout
 selection, deterministic
 movement and landmark-replay traces,
@@ -148,6 +153,14 @@ desktop viewport:
     scored playfield at zero horizontal centre offset with no page overflow.
     Its contained HUD keeps pause, gentler support, optional cue narration, and
     both volume controls visible without displacing the cue target.
+11. Production Chrome at 1280 x 720 verifies the scored-play move runway is
+    visible without page scrolling and renders at least four ordered upcoming
+    cues while Pause remains reachable; its automated axe scan reports no
+    detectable violations.
+12. A headed 1280 x 720 browser pass verifies the persistent five-position
+    camera-state compass is visible beside the runway, explicitly says the
+    player is centred, explains that one gentle step is sufficient, and does
+    not reintroduce page scrolling.
 
 The production bundle was also served through Vite Preview at 1280 x 720 in
 Chrome. After its generated service worker installed the exact bundle,

@@ -9,6 +9,7 @@ import {
 } from "../../domain/scoring/session-score";
 import type { SessionSummary } from "../../domain/session/session-summary";
 import type { InputSource } from "./session-machine";
+import { MOVEMENT_CLASSIFIER_VERSION } from "../../domain/movement/landmarks";
 
 export interface CreateSessionSummaryInput {
   readonly sessionId: string;
@@ -33,7 +34,7 @@ export function createSessionSummary(
     mode: input.mode,
     chartId: input.chart.id,
     chartVersion: input.chart.version,
-    classifierVersion: 1,
+    classifierVersion: MOVEMENT_CLASSIFIER_VERSION,
     qualityVersion: 1,
     scoringVersion: 1,
     simulated: input.source === "synthetic",

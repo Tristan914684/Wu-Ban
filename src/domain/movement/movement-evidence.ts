@@ -5,6 +5,7 @@ import type {
   SeatedCue,
   StandingCue,
 } from "./landmarks";
+import { MOVEMENT_CLASSIFIER_VERSION } from "./landmarks";
 
 export type MovementEvidenceOutcome =
   | MovementCue
@@ -24,7 +25,7 @@ export interface MovementEvidenceReport {
   readonly mode: SessionChart["mode"];
   readonly chartId: string;
   readonly chartVersion: 1;
-  readonly classifierVersion: 1;
+  readonly classifierVersion: 2;
   readonly totalMoveCues: number;
   readonly scoreableMoveCues: number;
   readonly matchedMoveCues: number;
@@ -98,7 +99,7 @@ export function createMovementEvidenceReport(
     mode: chart.mode,
     chartId: chart.id,
     chartVersion: chart.version,
-    classifierVersion: 1,
+    classifierVersion: MOVEMENT_CLASSIFIER_VERSION,
     totalMoveCues: movementAttempts.length,
     scoreableMoveCues: scoreable.length,
     matchedMoveCues: matched.length,
