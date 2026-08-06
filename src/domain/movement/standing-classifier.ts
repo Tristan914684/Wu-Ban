@@ -9,6 +9,7 @@ import {
 const FOOT_SIDE_THRESHOLD = 0.12;
 const HIP_SIDE_THRESHOLD = 0.18;
 const DEPTH_THRESHOLD = 0.11;
+const FOOT_DEPTH_THRESHOLD = 0.11;
 
 export interface StandingCalibration {
   readonly hipCenterX: number;
@@ -17,6 +18,8 @@ export interface StandingCalibration {
   readonly bodyScale: number;
   readonly leftAnkleX: number | null;
   readonly rightAnkleX: number | null;
+  readonly leftAnkleY: number | null;
+  readonly rightAnkleY: number | null;
 }
 
 type RequiredPosePoint = keyof typeof POSE_INDEX;
@@ -56,6 +59,8 @@ function poseGeometry(
       readonly bodyScale: number;
       readonly leftAnkleX: number | null;
       readonly rightAnkleX: number | null;
+      readonly leftAnkleY: number | null;
+      readonly rightAnkleY: number | null;
     }
   | undefined {
   const leftShoulder = getPoint(landmarks, "leftShoulder");
@@ -93,6 +98,8 @@ function poseGeometry(
     bodyScale,
     leftAnkleX: isScoreable(leftAnkle) ? leftAnkle.x : null,
     rightAnkleX: isScoreable(rightAnkle) ? rightAnkle.x : null,
+    leftAnkleY: isScoreable(leftAnkle) ? leftAnkle.y : null,
+    rightAnkleY: isScoreable(rightAnkle) ? rightAnkle.y : null,
   };
 }
 
@@ -119,6 +126,12 @@ export function averageStandingCalibrations(
   const rightAnkles = samples.flatMap((sample) =>
     sample.rightAnkleX === null ? [] : [sample.rightAnkleX],
   );
+  const leftAnkleYs = samples.flatMap((sample) =>
+    sample.leftAnkleY === null ? [] : [sample.leftAnkleY],
+  );
+  const rightAnkleYs = samples.flatMap((sample) =>
+    sample.rightAnkleY === null ? [] : [sample.rightAnkleY],
+  );
 
   return {
     hipCenterX: average(samples.map((sample) => sample.hipCenterX)),
@@ -127,6 +140,8 @@ export function averageStandingCalibrations(
     bodyScale: average(samples.map((sample) => sample.bodyScale)),
     leftAnkleX: leftAnkles.length === 0 ? null : average(leftAnkles),
     rightAnkleX: rightAnkles.length === 0 ? null : average(rightAnkles),
+    leftAnkleY: leftAnkleYs.length === 0 ? null : average(leftAnkleYs),
+    rightAnkleY: rightAnkleYs.length === 0 ? null : average(rightAnkleYs),
   };
 }
 
@@ -184,25 +199,37 @@ export function classifyStanding(
     };
   }
 
-  const scaleChange = geometry.bodyScale / calibration.bodyScale - 1;
-  const shoulderChange =
-    geometry.shoulderWidth / calibration.shoulderWidth - 1;
-  const combinedDepthChange = scaleChange * 0.7 + shoulderChange * 0.3;
-  if (combinedDepthChange >= DEPTH_THRESHOLD) {
+  const leftDepthChange =
+    geometry.leftAnkleY === null || calibration.leftAnkleY === null
+      ? 0
+      : (geometry.leftAnkleY - calibration.leftAnkleY) / calibration.bodyScale;
+  const rightDepthChange =
+    geometry.rightAnkleY === null || calibration.rightAnkleY === null
+      ? 0
+      : (geometry.rightAnkleY - calibration.rightAnkleY) /
+        calibration.bodyScale;
+
+  const forwardStrength = Math.max(
+    Math.max(0, leftDepthChange) / FOOT_DEPTH_THRESHOLD,
+    Math.max(0, rightDepthChange) / FOOT_DEPTH_THRESHOLD,
+  );
+  const backwardStrength = Math.max(
+    Math.max(0, -leftDepthChange) / FOOT_DEPTH_THRESHOLD,
+    Math.max(0, -rightDepthChange) / FOOT_DEPTH_THRESHOLD,
+  );
+
+  if (forwardStrength >= 1 && forwardStrength > backwardStrength) {
     return {
       kind: "movement",
       cue: "step-forward",
-      confidence: Math.min(1, combinedDepthChange / (DEPTH_THRESHOLD * 2)),
+      confidence: Math.min(1, forwardStrength / 2),
     };
   }
-  if (combinedDepthChange <= -DEPTH_THRESHOLD) {
+  if (backwardStrength >= 1) {
     return {
       kind: "movement",
       cue: "step-back",
-      confidence: Math.min(
-        1,
-        Math.abs(combinedDepthChange) / (DEPTH_THRESHOLD * 2),
-      ),
+      confidence: Math.min(1, backwardStrength / 2),
     };
   }
 
