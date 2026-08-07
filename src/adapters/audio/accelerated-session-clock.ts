@@ -5,7 +5,7 @@ export class AcceleratedSessionClock implements SessionClock {
   private pausedAt = 0;
   private totalPausedMs = 0;
 
-  constructor(private readonly speed = 8) {}
+  constructor(private readonly speed = 8) { }
 
   prepare(): Promise<void> {
     return Promise.resolve();
@@ -32,6 +32,14 @@ export class AcceleratedSessionClock implements SessionClock {
 
   setCueVolume(value: number): void {
     void value;
+  }
+
+  playCorrectCue(): void {
+    // No audio in the camera-free simulation mode.
+  }
+
+  playIncorrectCue(): void {
+    // No audio in the camera-free simulation mode.
   }
 
   pause(): Promise<void> {

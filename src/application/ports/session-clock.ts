@@ -6,6 +6,8 @@ export interface SessionClock {
   elapsedMs(): number;
   setMusicVolume(value: number): void;
   setCueVolume(value: number): void;
+  playCorrectCue(): void;
+  playIncorrectCue(): void;
   pause(): Promise<void>;
   resume(): Promise<void>;
   stop(): Promise<void>;

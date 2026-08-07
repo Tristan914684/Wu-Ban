@@ -616,6 +616,11 @@ export function GameplayScreen({
               });
             }
             const outcome = outcomeForAttempt(attempt);
+            if (outcome === "good" || outcome === "nearly") {
+              clock.playCorrectCue();
+            } else if (outcome === "next") {
+              clock.playIncorrectCue();
+            }
             setFeedback(
               outcome === "unscoreable"
                 ? isChinese

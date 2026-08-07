@@ -166,31 +166,56 @@ export class BrowserSessionClock implements SessionClock {
       }
     }
 
-    const cueTone = context.createOscillator();
-    const cueGain = context.createGain();
-    cueTone.type = "sine";
-    cueGain.gain.setValueAtTime(0.0001, startedAt);
-    cueTone.connect(cueGain).connect(this.cueBus);
-
-    chart.cues.forEach((cue) => {
-      const cueAt = startedAt + cue.atMs / 1000;
-      cueTone.frequency.setValueAtTime(
-        cue.action === "hold" ? 523.25 : 783.99,
-        cueAt,
-      );
-      cueGain.gain.setValueAtTime(0.0001, cueAt);
-      cueGain.gain.linearRampToValueAtTime(
-        cue.action === "hold" ? 0.06 : 0.12,
-        cueAt + 0.012,
-      );
-      cueGain.gain.exponentialRampToValueAtTime(0.0001, cueAt + 0.18);
-    });
-
     melody.start(startedAt);
     melody.stop(sessionEnd + 0.1);
-    cueTone.start(startedAt);
-    cueTone.stop(startedAt + chart.durationMs / 1000 + 0.2);
-    this.activeNodes.push(melody, cueTone);
+    this.activeNodes.push(melody);
+  }
+
+  /**
+   * Plays a short one-shot tone on the cue bus, starting immediately.
+   * Used for reactive per-attempt feedback rather than the pre-scheduled
+   * background melody, since correctness is only known once a move has
+   * actually been observed.
+   */
+  private playOneShot(
+    type: OscillatorType,
+    startFrequency: number,
+    peakGain: number,
+    durationSeconds: number,
+    endFrequency?: number,
+  ): void {
+    const context = this.context;
+    if (context === null || this.cueBus === null) {
+      return;
+    }
+    const now = context.currentTime;
+    const tone = context.createOscillator();
+    const gain = context.createGain();
+    tone.type = type;
+    tone.frequency.setValueAtTime(startFrequency, now);
+    if (endFrequency !== undefined) {
+      tone.frequency.exponentialRampToValueAtTime(
+        endFrequency,
+        now + durationSeconds,
+      );
+    }
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.linearRampToValueAtTime(peakGain, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + durationSeconds);
+    tone.connect(gain).connect(this.cueBus);
+    tone.start(now);
+    tone.stop(now + durationSeconds + 0.02);
+    this.activeNodes.push(tone);
+  }
+
+  /** The rhythm "ding" — played when a move matches the expected cue. */
+  playCorrectCue(): void {
+    this.playOneShot("sine", 783.99, 0.12, 0.16);
+  }
+
+  /** A short, low "DEHHHH" buzz — played when a move is wrong. */
+  playIncorrectCue(): void {
+    this.playOneShot("sawtooth", 180, 0.18, 0.22, 90);
   }
 
   elapsedMs(): number {
