@@ -338,10 +338,10 @@ export function GameplayScreen({
     const performanceEvidence =
       debugEnabled && source === "camera"
         ? new DevicePerformanceEvidenceCollector({
-            mode: chart.mode,
-            chartId: chart.id,
-            chartVersion: chart.version,
-          })
+          mode: chart.mode,
+          chartId: chart.id,
+          chartVersion: chart.version,
+        })
         : null;
 
     const start = async () => {
@@ -403,6 +403,15 @@ export function GameplayScreen({
 
         if (observation.kind === "unscoreable") {
           setTrackingIssue(observation.reason);
+          const seatedNoHands =
+            mode === "seated" && observation.reason === "missing-landmarks";
+          if (seatedNoHands) {
+            trackingLostAtRef.current = null;
+            if (playbackRef.current === "tracking-lost") {
+              onTrackingRecovered();
+            }
+            return;
+          }
           trackingLostAtRef.current ??= timestampMs;
           if (
             timestampMs - trackingLostAtRef.current >= 1_200 &&
@@ -457,9 +466,9 @@ export function GameplayScreen({
               ? classifySeated(frame)
               : calibration === null
                 ? {
-                    kind: "unscoreable" as const,
-                    reason: "missing-landmarks" as const,
-                  }
+                  kind: "unscoreable" as const,
+                  reason: "missing-landmarks" as const,
+                }
                 : classifyStanding(frame, calibration);
           applyTrackingObservation(observation, timestampMs, elapsed);
           performanceEvidence?.recordInference({
@@ -502,7 +511,7 @@ export function GameplayScreen({
               inferenceWindowMs === 0
                 ? 0
                 : (inferenceSampleRef.current.frames * 1_000) /
-                  inferenceWindowMs,
+                inferenceWindowMs,
             audioOffsetMs:
               elapsed - (timestampMs - performanceStartRef.current),
             confidence:
@@ -511,7 +520,7 @@ export function GameplayScreen({
                   ? 1
                   : 0
                 : inferenceSampleRef.current.confidenceTotal /
-                  inferenceSampleRef.current.frames,
+                inferenceSampleRef.current.frames,
           });
           renderSampleRef.current = { atMs: timestampMs, frames: 0 };
           inferenceSampleRef.current = {
@@ -531,16 +540,16 @@ export function GameplayScreen({
                 ? syntheticTrackingFaultRef.current
                   ? lastObservationRef.current
                   : replaySyntheticObservation(
-                      mode,
-                      cue.expected,
-                      index,
-                      elapsed,
-                    )
+                    mode,
+                    cue.expected,
+                    index,
+                    elapsed,
+                  )
                 : observationForCue(
-                    lastObservationRef.current,
-                    movementCaptureRef.current.latest,
-                    cue.atMs,
-                  );
+                  lastObservationRef.current,
+                  movementCaptureRef.current.latest,
+                  cue.atMs,
+                );
             const syntheticOffsets = [120, 340, -180, 520] as const;
             const detectedMovement = movementCaptureRef.current.latest;
             const timingOffset =
@@ -549,8 +558,8 @@ export function GameplayScreen({
                 : cue.expected === null
                   ? 0
                   : detectedMovement !== null &&
-                      observation.kind === "movement" &&
-                      detectedMovement.cue === observation.cue
+                    observation.kind === "movement" &&
+                    detectedMovement.cue === observation.cue
                     ? detectedMovement.atMs - cue.atMs
                     : null;
             const attempt = observationToAttempt(
@@ -620,9 +629,9 @@ export function GameplayScreen({
                     ? isChinese
                       ? "差一点，很接近"
                       : "Nearly — very close"
-                  : isChinese
-                    ? "没关系，看下一个"
-                    : "Try the next one",
+                    : isChinese
+                      ? "没关系，看下一个"
+                      : "Try the next one",
             );
           }
         });
