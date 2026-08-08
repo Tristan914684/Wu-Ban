@@ -26,8 +26,9 @@ The browser application implements:
   calibration, ankle-first side-step recognition with hip-centre fallback,
   and visible body/hand landmark diagnostics during calibration and rehearsal;
 - forgiving classifier-version-2 standing thresholds, one-cue movement-event
-  capture through a prompt centre return, and a persistent scored-play compass
-  naming the live centred/directional/unclear camera state;
+  capture through a prompt centre return, strongest-axis selection when a
+  forward foot also drifts sideways in the camera image, and a persistent
+  scored-play compass naming the live centred/directional/unclear camera state;
 - an unscored warm-up followed by the authored Follow, Rhythm, and
   Memory/no-go durations;
 - deterministic bounded preview support, an always-available gentler action,
@@ -68,8 +69,9 @@ tracking state machine while retaining those simulation disclosures.
 
 ## Automated evidence
 
-Run on the current worktree and repeated from a clean archived checkout with
-Node.js `24.18.0` and npm `11.16.0`:
+Baseline recorded before the later reactive-audio and UI-copy changes, then
+repeated from a clean archived checkout with Node.js `24.18.0` and npm
+`11.16.0`:
 
 | Check | Result |
 |---|---|
@@ -81,12 +83,20 @@ Node.js `24.18.0` and npm `11.16.0`:
 | `npm run test:e2e` | 24-test suite passed before this follow-up; 2 affected Chrome tests passed afterward |
 | `npm run docs:validate` | 94 documentation files and 2 entrypoints passed |
 
-For the movement-runway, gentle-step, and live-position follow-ups,
+At the time of the movement-runway, gentle-step, and live-position follow-ups,
 documentation validation, lint, 118 unit/component tests, 7 IndexedDB
 integration/migration tests, TypeScript compilation, and the production build
-pass in the current worktree. Focused production Chrome checks cover the
+passed. Focused production Chrome checks covered the
 scored-play viewport and Pause/Resume/Stop journey; demo-device camera evidence
 remains open.
+
+For the 9 August forward-step axis-conflict fix, the 16 standing-classifier
+tests, the 26-test focused movement set, lint, typecheck, 7 integration tests,
+production build, bundle budget, and documentation validation pass. The full
+unit run reports 118 passed and one unrelated stale audio-clock assertion; the
+production Chrome run reports 23 passed and two unrelated stale accessibility
+text selectors. Standing simulated play and classifier-backed tracking
+recovery pass. Representative real-camera validation remains open.
 
 The tests cover player-facing coordinate normalization, hand-landmark
 confidence translation, ankle-first standing side steps, calibration-window

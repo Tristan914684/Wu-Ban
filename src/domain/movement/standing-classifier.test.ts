@@ -97,6 +97,23 @@ describe("standing movement traces", () => {
     });
   });
 
+  it("uses the stronger forward signal when the stepping foot also drifts sideways", () => {
+    expect(calibration).toBeDefined();
+    if (calibration === undefined) {
+      return;
+    }
+
+    expect(
+      classifyStanding(
+        poseFrame({ leftAnkleX: 0.38, leftAnkleY: 0.81 }),
+        calibration,
+      ),
+    ).toMatchObject({
+      kind: "movement",
+      cue: "step-forward",
+    });
+  });
+
   it("keeps a small foot adjustment neutral", () => {
     expect(calibration).toBeDefined();
     if (calibration === undefined) {

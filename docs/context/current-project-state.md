@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 3 August 2026
+**Last verified:** 9 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,10 +21,13 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: 118 unit/component tests and 7 IndexedDB
-  integration/migration tests pass in the current worktree. The 24-test
-  production Chrome suite passed before this gameplay follow-up; the two
-  affected scored-play and Pause/Resume/Stop journeys pass after it.
+- Automated application tests: 118 of 119 unit/component tests and all 7
+  IndexedDB integration/migration tests pass in the current worktree. The one
+  unit failure is an unrelated stale audio-clock assertion after the latest
+  reactive-cue change. In production Chrome, 23 of 25 journeys pass; the two
+  failures are stale accessibility text selectors for labels that the current
+  UI no longer exposes. Standing simulated play and classifier-backed tracking
+  recovery pass.
 - CI: least-privileged GitHub Actions workflow is implemented locally; its
   first remote run remains unverified until the branch is pushed to GitHub.
 - Production deployment: private Sites URL is live at
@@ -93,9 +96,11 @@ file after material verified changes.
 
 ## Evidence status
 
-- Documentation validation, lint, 118 unit/component tests, 7 IndexedDB
-  integration tests, TypeScript compilation, production Vite build, and bundle
-  budget are verified in the current worktree.
+- Documentation validation, lint, the 16-test standing-classifier suite, 7
+  IndexedDB integration tests, TypeScript compilation, production Vite build,
+  and bundle budget are verified in the current worktree. The full unit and
+  browser-suite exceptions are recorded above and are outside the movement
+  classifier path.
 - Movement rehearsal features a clean 3-column, single-page layout without text overlays on the camera preview. All move lists, active cue cards, position reset instructions, and tracking readouts live in layout panels around the video. Every movement cue provides clear, explicit movement instructions in both English and Simplified Chinese side-by-side. The entire workspace fits within 100dvh without vertical scrolling.
 - Standing and seated synthetic journeys, bilingual result copy,
   self-reported context exclusion, denied-camera guidance and camera-free
@@ -121,12 +126,14 @@ file after material verified changes.
   visible preview. Standing side steps use ankle displacement first with
   a bounded hip-centre fallback. Classifier version 2 lowers the entertainment
   movement thresholds so a gentle intentional ankle step or bounded depth
-  change is sufficient; the three-second calibration still stores an average
-  rather than one final frame. Calibration and movement practice now
-  draw the scoreable body/hand landmarks and name the detected parts; rehearsal
-  also reports the current classified direction. These changes have automated
-  landmark and classifier evidence, but still require a representative human
-  run on the demo camera.
+  change is sufficient. When a forward foot also drifts sideways in the camera
+  image, the classifier now selects the stronger movement axis instead of
+  always returning the side direction first; the three-second calibration
+  still stores an average rather than one final frame. Calibration and movement
+  practice now draw the scoreable body/hand landmarks and name the detected
+  parts; rehearsal also reports the current classified direction. These
+  changes have automated landmark and classifier evidence, but still require a
+  representative human run on the demo camera.
 - Movement rehearsal now keeps the camera as the centred, dominant proof
   surface. Move progress, the active cue, centre/home guidance, and tracking
   status are compact overlays. The rehearsal frame expands to a taller 16:10,

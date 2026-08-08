@@ -8,7 +8,6 @@ import {
 
 const FOOT_SIDE_THRESHOLD = 0.06;
 const HIP_SIDE_THRESHOLD = 0.12;
-const DEPTH_THRESHOLD = 0.07;
 const FOOT_DEPTH_THRESHOLD = 0.06;
 
 export interface StandingCalibration {
@@ -184,21 +183,6 @@ export function classifyStanding(
     Math.max(0, hipLateralChange) / HIP_SIDE_THRESHOLD,
   );
 
-  if (leftStrength >= 1 && leftStrength > rightStrength) {
-    return {
-      kind: "movement",
-      cue: "step-left",
-      confidence: Math.min(1, leftStrength / 2),
-    };
-  }
-  if (rightStrength >= 1) {
-    return {
-      kind: "movement",
-      cue: "step-right",
-      confidence: Math.min(1, rightStrength / 2),
-    };
-  }
-
   const leftDepthChange =
     geometry.leftAnkleY === null || calibration.leftAnkleY === null
       ? 0
@@ -217,19 +201,40 @@ export function classifyStanding(
     Math.max(0, -leftDepthChange) / FOOT_DEPTH_THRESHOLD,
     Math.max(0, -rightDepthChange) / FOOT_DEPTH_THRESHOLD,
   );
+  const depthDominates =
+    Math.max(forwardStrength, backwardStrength) >
+    Math.max(leftStrength, rightStrength);
 
-  if (forwardStrength >= 1 && forwardStrength > backwardStrength) {
+  if (
+    depthDominates &&
+    forwardStrength >= 1 &&
+    forwardStrength > backwardStrength
+  ) {
     return {
       kind: "movement",
       cue: "step-forward",
       confidence: Math.min(1, forwardStrength / 2),
     };
   }
-  if (backwardStrength >= 1) {
+  if (depthDominates && backwardStrength >= 1) {
     return {
       kind: "movement",
       cue: "step-back",
       confidence: Math.min(1, backwardStrength / 2),
+    };
+  }
+  if (leftStrength >= 1 && leftStrength > rightStrength) {
+    return {
+      kind: "movement",
+      cue: "step-left",
+      confidence: Math.min(1, leftStrength / 2),
+    };
+  }
+  if (rightStrength >= 1) {
+    return {
+      kind: "movement",
+      cue: "step-right",
+      confidence: Math.min(1, rightStrength / 2),
     };
   }
 

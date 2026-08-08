@@ -27,6 +27,8 @@ export function poseFrame(
     readonly bodyScale?: number;
     readonly leftAnkleX?: number;
     readonly rightAnkleX?: number;
+    readonly leftAnkleY?: number;
+    readonly rightAnkleY?: number;
     readonly confidence?: number;
     readonly personCount?: number;
   } = {},
@@ -66,13 +68,13 @@ export function poseFrame(
   });
   landmarks[POSE_INDEX.leftAnkle] = point({
     x: values.leftAnkleX ?? hipCenterX - 0.08,
-    y: ankleY,
+    y: values.leftAnkleY ?? ankleY,
     visibility: confidence,
     presence: confidence,
   });
   landmarks[POSE_INDEX.rightAnkle] = point({
     x: values.rightAnkleX ?? hipCenterX + 0.08,
-    y: ankleY,
+    y: values.rightAnkleY ?? ankleY,
     visibility: confidence,
     presence: confidence,
   });
