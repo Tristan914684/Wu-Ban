@@ -42,6 +42,7 @@ import {
 } from "../../domain/movement/standing-classifier";
 import {
   outcomeForAttempt,
+  type AttemptOutcome,
   type CueAttempt,
 } from "../../domain/scoring/session-score";
 import {
@@ -235,6 +236,12 @@ export function GameplayScreen({
   const [musicVolume, setMusicVolume] = useState(0.75);
   const [cueVolume, setCueVolume] = useState(0.9);
   const [voiceGuidance, setVoiceGuidance] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(true);
+  const [streak, setStreak] = useState(0);
+  const [judgment, setJudgment] = useState<{
+    readonly outcome: AttemptOutcome;
+    readonly atMs: number;
+  } | null>(null);
   const [narrator] = useState(() => new BrowserCueNarrator());
   const [trackingIssue, setTrackingIssue] =
     useState<TrackingIssue | null>(null);
@@ -621,6 +628,14 @@ export function GameplayScreen({
             } else if (outcome === "next") {
               clock.playIncorrectCue();
             }
+            setJudgment({ outcome, atMs: elapsed });
+            if (outcome === "good" || outcome === "nearly") {
+              setStreak((current) => current + 1);
+            } else if (outcome === "next") {
+              // Unscoreable attempts leave the streak alone: losing a run to a
+              // tracking dropout would punish the player for the camera.
+              setStreak(0);
+            }
             setFeedback(
               outcome === "unscoreable"
                 ? isChinese
@@ -698,7 +713,10 @@ export function GameplayScreen({
   const laneLabels = LANE_LABELS[mode];
   const playerState = livePlayerState(language, mode, liveObservation);
   return (
-    <main className="gameplay-screen">
+    <main
+      className="gameplay-screen"
+      data-guide-open={guideOpen ? "true" : "false"}
+    >
       <section
         className="gameplay-stage"
         aria-label="Dance playfield"
@@ -741,6 +759,29 @@ export function GameplayScreen({
             <div className="move-runway__hit-line">
               <span>{isChinese ? "现在做" : "MOVE NOW"}</span>
             </div>
+            {judgment !== null && elapsedMs - judgment.atMs < 900 ? (
+              <p
+                className="judgment-banner"
+                data-outcome={judgment.outcome}
+                key={judgment.atMs}
+              >
+                {judgment.outcome === "good"
+                  ? isChinese
+                    ? "很好"
+                    : "Good"
+                  : judgment.outcome === "nearly"
+                    ? isChinese
+                      ? "差一点"
+                      : "Nearly"
+                    : judgment.outcome === "next"
+                      ? isChinese
+                        ? "看下一个"
+                        : "Next one"
+                      : isChinese
+                        ? "不计分"
+                        : "Not scored"}
+              </p>
+            ) : null}
             {runwayCues.map((cue, index) => {
               const lane =
                 cue.expected === null ? "hold" : CUE_LANES[cue.expected];
@@ -762,7 +803,7 @@ export function GameplayScreen({
                   </span>
                   <span className="move-note__symbol">
                     {cue.expected === null
-                      ? "—"
+                      ? "🏮"
                       : CUE_SYMBOLS[cue.expected]}
                   </span>
                   <strong>{cueLabel(language, cue.expected)}</strong>
@@ -784,6 +825,12 @@ export function GameplayScreen({
             ))}
           </ol>
         </section>
+        {streak >= 2 ? (
+          <p aria-hidden="true" className="streak-badge">
+            <span>{isChinese ? "连续" : "STREAK"}</span>
+            <strong>{streak}</strong>
+          </p>
+        ) : null}
         {visibleCue === undefined ? (
           <p className="current-cue-title">
             {isChinese ? "看跑道，准备下一个" : "Watch the runway"}
@@ -856,7 +903,24 @@ export function GameplayScreen({
           </div>
         ) : null}
       </section>
-      <aside className="gameplay-hud" data-gameplay-hud>
+      <aside className="gameplay-hud" data-gameplay-hud id="gameplay-guide">
+        <button
+          aria-controls="gameplay-guide"
+          aria-expanded={guideOpen}
+          className="guide-toggle"
+          onClick={() => {
+            setGuideOpen((open) => !open);
+          }}
+          type="button"
+        >
+          {guideOpen
+            ? isChinese
+              ? "收起指引"
+              : "Hide guide"
+            : isChinese
+              ? "展开指引"
+              : "Show guide"}
+        </button>
         <p className="eyebrow">
           {SECTION_LABELS[currentSection][isChinese ? 0 : 1]}
         </p>

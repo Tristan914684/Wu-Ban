@@ -2709,6 +2709,557 @@ code {
   display: none;
 }
 
+/* ==========================================================================
+   KTV stage — gameplay visual direction
+   Scoped to .gameplay-screen so onboarding, progress, and sharing keep the
+   paper/ink direction. Miora art drops in through the --asset-* hooks; every
+   one falls back to a CSS rendering so the screen is complete without art.
+   ========================================================================== */
+
+.gameplay-screen {
+  --stage-deep: #150a10;
+  --stage: #22101a;
+  --stage-lift: #331924;
+  --curtain: #8e1b26;
+  --stage-red: #d8363c;
+  --stage-gold: #f2c14e;
+  --stage-gold-deep: #c8912b;
+  --stage-cream: #fdf3df;
+  --stage-cream-dim: #cdb9a0;
+  --lane-0: #f2c14e;
+  --lane-1: #2fa389;
+  --lane-2: #e8863c;
+  --lane-3: #dc4b52;
+  --lane-hold: #f7e6c0;
+
+  /* Miora asset hooks. Replace `none` with url("/assets/…") when art lands.
+     Each falls back to the CSS rendering, so the screen is complete without
+     any generated art. */
+  --asset-backdrop: none;
+  --asset-hold-note: none;
+  --asset-arrow-left: none;
+  --asset-arrow-forward: none;
+  --asset-arrow-back: none;
+  --asset-arrow-right: none;
+
+  background: var(--stage-deep);
+}
+
+.gameplay-screen .gameplay-stage {
+  background:
+    var(--asset-backdrop) center top / cover no-repeat,
+    radial-gradient(120% 78% at 50% -8%, #4a2130 0%, transparent 58%),
+    radial-gradient(80% 55% at 50% 0%, rgb(242 193 78 / 16%) 0%, transparent 62%),
+    linear-gradient(180deg, var(--stage) 0%, var(--stage-deep) 72%);
+}
+
+/* Camera becomes a framed stage monitor rather than a full-bleed backdrop.
+   Keeps live video out from behind the cues, per animation-guidelines.md.
+   The monitor column is derived from these three values so the video and the
+   detection readout stack without overlapping each other. */
+.gameplay-screen {
+  --monitor-x: clamp(16px, 2vw, 28px);
+  --monitor-w: clamp(168px, 19vw, 258px);
+}
+
+.gameplay-screen .gameplay-stage video {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  left: var(--monitor-x);
+  width: var(--monitor-w);
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border: 4px solid var(--stage-gold-deep);
+  border-radius: 10px;
+  object-fit: cover;
+  transform: translateY(-50%);
+}
+
+/* The cue name is already the largest thing on the rail. Repeating it over the
+   camera made it the fourth copy on screen, so this one goes. */
+.gameplay-screen .current-cue-title {
+  display: none;
+}
+
+/* Decorative chrome removed: the runway heading and the hit-line caption. Both
+   sit inside aria-hidden subtrees, so nothing is lost to assistive tech. The
+   lit hit-line bar itself stays — it is the timing reference. */
+.gameplay-screen .move-runway__heading,
+.gameplay-screen .move-runway__hit-line span {
+  display: none;
+}
+
+/* The detection readout is removed from sight but kept in the accessibility
+   tree: it is an aria-live region, and display:none would silence the
+   announcements that non-visual players rely on. */
+.gameplay-screen .live-player-state {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  margin: -1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Feedback moves off the camera and onto its own line beneath the runway. */
+.gameplay-screen .gameplay-feedback {
+  top: auto;
+  right: calc(var(--game-hud-width) + 2 * var(--game-hud-offset));
+  bottom: clamp(10px, 1.6dvh, 18px);
+  left: clamp(220px, 21vw, 350px);
+  min-width: 0;
+  max-width: none;
+  border-radius: 8px;
+  font-size: clamp(17px, 1.6vw, 21px);
+  text-align: center;
+}
+
+/* Synthetic-mode backdrop. Replaces the sunset gradient so simulated play and
+   camera play share one stage, and so cues never sit on a light field. */
+.gameplay-screen .gameplay-stage__paper {
+  background:
+    var(--asset-backdrop) center top / cover no-repeat,
+    radial-gradient(120% 78% at 50% -8%, #4a2130 0%, transparent 58%),
+    radial-gradient(80% 55% at 50% 0%, rgb(242 193 78 / 16%) 0%, transparent 62%),
+    linear-gradient(180deg, var(--stage) 0%, var(--stage-deep) 72%);
+}
+
+.gameplay-screen .gameplay-stage__paper::before {
+  inset: auto 0 0;
+  height: 26%;
+  border-top: 1px solid rgb(200 145 43 / 28%);
+  background: linear-gradient(180deg, rgb(242 193 78 / 9%), transparent 70%);
+}
+
+.gameplay-screen .gameplay-stage__shade {
+  background: linear-gradient(
+    to bottom,
+    rgb(21 10 16 / 34%),
+    transparent 30%,
+    rgb(21 10 16 / 52%)
+  );
+}
+
+/* Room below the hit line for the current note's label, with the lane labels
+   moved out of the track so the two never collide. */
+.gameplay-screen .move-runway {
+  bottom: clamp(100px, 14dvh, 136px);
+}
+
+.gameplay-screen .move-runway__track {
+  overflow: visible;
+}
+
+.gameplay-screen .move-runway__lane-labels {
+  bottom: -52px;
+  gap: 8px;
+}
+
+/* Curtain valance, drawn in CSS. */
+.gameplay-screen .gameplay-stage::before {
+  position: absolute;
+  z-index: 6;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 34px;
+  background:
+    radial-gradient(circle at 20px 0, var(--curtain) 0 20px, transparent 21px)
+      0 0 / 40px 34px repeat-x,
+    linear-gradient(180deg, #a82430 0 60%, var(--curtain) 100%);
+  box-shadow: inset 0 5px 0 rgb(242 193 78 / 55%);
+  content: "";
+  pointer-events: none;
+}
+
+/* ---------- runway ---------- */
+
+.gameplay-screen .move-runway__heading {
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 78%);
+  border: 1px solid #63313c;
+  border-radius: 999px;
+  box-shadow: none;
+  transform: translateX(-50%);
+}
+
+.gameplay-screen .move-runway__heading span {
+  color: var(--stage-gold);
+  font-size: 11px;
+}
+
+.gameplay-screen .move-runway__heading strong {
+  color: var(--stage-cream);
+}
+
+.gameplay-screen .move-runway__track::before {
+  border-bottom: 0;
+  background: none;
+}
+
+.gameplay-screen .move-runway__lines {
+  opacity: 1;
+  stroke: rgb(242 193 78 / 34%);
+  stroke-width: 1.5;
+}
+
+.gameplay-screen .move-runway__hit-line {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--stage-gold) 12%,
+    #fff8e2 50%,
+    var(--stage-gold) 88%,
+    transparent
+  );
+  box-shadow: none;
+}
+
+.gameplay-screen .move-runway__hit-line::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  top: 8px;
+  height: 64px;
+  background: linear-gradient(180deg, rgb(242 193 78 / 26%), transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.gameplay-screen .move-runway__hit-line span {
+  top: -42px;
+  padding: 6px 18px;
+  border: 2px solid var(--stage-gold);
+  border-radius: 5px;
+  color: #fff;
+  background: var(--stage-red);
+  font-size: 14px;
+  letter-spacing: 0.14em;
+}
+
+/* ---------- notes ---------- */
+
+.gameplay-screen .move-note {
+  width: clamp(104px, 11vw, 150px);
+  gap: 7px;
+}
+
+.gameplay-screen .move-note__symbol {
+  width: clamp(84px, 8.4vw, 118px);
+  border: 5px solid var(--stage-gold);
+  border-radius: 22px;
+  color: #2a1608;
+  background-color: var(--lane-0);
+  background-image: var(--asset-arrow-left);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  box-shadow: 0 8px 0 rgb(0 0 0 / 55%);
+  font-family: inherit;
+  font-size: clamp(42px, 4.4vw, 62px);
+  font-weight: 900;
+}
+
+.gameplay-screen .move-note strong {
+  max-width: none;
+  padding: 4px 12px;
+  border-radius: 5px;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 90%);
+  font-size: clamp(15px, 1.5vw, 20px);
+  font-weight: 800;
+}
+
+.gameplay-screen .move-note--lane-1 .move-note__symbol {
+  border-radius: 22px;
+  color: #04231b;
+  background-color: var(--lane-1);
+  background-image: var(--asset-arrow-forward);
+}
+
+.gameplay-screen .move-note--lane-2 .move-note__symbol {
+  border-radius: 22px;
+  color: #331402;
+  background-color: var(--lane-2);
+  background-image: var(--asset-arrow-back);
+}
+
+.gameplay-screen .move-note--lane-3 .move-note__symbol {
+  border-radius: 22px;
+  color: #380b0e;
+  background-color: var(--lane-3);
+  background-image: var(--asset-arrow-right);
+}
+
+/* No-go hold cue. Reads as rest, never as warning. */
+.gameplay-screen .move-note--lane-hold {
+  width: min(56%, 460px);
+}
+
+.gameplay-screen .move-note--lane-hold .move-note__symbol {
+  width: 100%;
+  height: 76px;
+  aspect-ratio: auto;
+  border-radius: 12px;
+  color: #3a2708;
+  background: var(--asset-hold-note) center / contain no-repeat,
+    var(--lane-hold);
+  font-size: clamp(24px, 2.4vw, 32px);
+}
+
+.gameplay-screen .move-note[data-current="true"] .move-note__symbol {
+  border-color: #fff8e2;
+}
+
+.gameplay-screen .move-note[data-current="true"] {
+  filter: none;
+}
+
+.gameplay-screen .move-note__order {
+  border-color: var(--stage-gold);
+  color: #2a1608;
+  background: var(--stage-gold);
+}
+
+/* ---------- lane labels ---------- */
+
+.gameplay-screen .move-runway__lane-labels span {
+  padding: 11px 4px;
+  border-top: 5px solid var(--lane-0);
+  border-radius: 7px 7px 0 0;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 82%);
+  font-size: clamp(14px, 1.3vw, 18px);
+}
+
+.gameplay-screen .move-runway__lane-labels span:nth-child(2) {
+  border-top-color: var(--lane-1);
+}
+
+.gameplay-screen .move-runway__lane-labels span:nth-child(3) {
+  border-top-color: var(--lane-2);
+}
+
+.gameplay-screen .move-runway__lane-labels span:nth-child(4) {
+  border-top-color: var(--lane-3);
+}
+
+/* ---------- current cue, feedback, player state ---------- */
+
+.gameplay-screen .current-cue-title {
+  border-radius: 8px;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 88%);
+}
+
+.gameplay-screen .current-cue-title span {
+  color: var(--stage-gold);
+}
+
+.gameplay-screen .gameplay-feedback {
+  border-radius: 8px;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 88%);
+}
+
+/* ---------- HUD rail ---------- */
+
+.gameplay-screen .gameplay-hud {
+  border: 1px solid rgb(200 145 43 / 40%);
+  border-radius: 12px;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 92%);
+  box-shadow: none;
+}
+
+.gameplay-screen .gameplay-hud .eyebrow {
+  color: var(--stage-gold);
+}
+
+.gameplay-screen .gameplay-hud h1 {
+  color: var(--stage-cream);
+}
+
+.gameplay-screen .gameplay-hud progress {
+  accent-color: var(--stage-gold);
+}
+
+.gameplay-screen .gameplay-hud dd {
+  color: var(--stage-cream);
+}
+
+/* ---------- collapsible guide ---------- */
+
+.guide-toggle {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 2px solid var(--stage-gold-deep);
+  border-radius: 999px;
+  margin-bottom: 14px;
+  color: var(--stage-gold);
+  background: transparent;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.guide-toggle:hover {
+  color: #2a1608;
+  background: var(--stage-gold);
+}
+
+/* Collapsed: a slim strip. Pause stays on screen because AGENTS.md requires
+   movement to remain pausable — the controls must never collapse with the
+   guide. Targets stay at the 44px minimum from design-system.md. */
+.gameplay-screen[data-guide-open="false"] .gameplay-hud {
+  bottom: auto;
+  width: auto;
+  max-width: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  overflow: visible;
+}
+
+.gameplay-screen[data-guide-open="false"]
+  .gameplay-hud
+  > *:not(.guide-toggle):not(.gameplay-hud__actions) {
+  display: none;
+}
+
+.gameplay-screen[data-guide-open="false"] .guide-toggle {
+  min-height: 40px;
+  padding: 8px 14px;
+  margin-bottom: 0;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.gameplay-screen[data-guide-open="false"] .gameplay-hud__actions {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+}
+
+.gameplay-screen[data-guide-open="false"] .gameplay-hud .button {
+  min-height: 40px;
+  padding: 8px 14px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* "Make it gentler" is an adjustment, not a safety control, so it folds away
+   with the rest of the guide. Pause does not. */
+.gameplay-screen[data-guide-open="false"]
+  .gameplay-hud__actions
+  > *:not(:first-child) {
+  display: none;
+}
+
+/* Runway reclaims the rail's width when the guide is closed. */
+.gameplay-screen[data-guide-open="false"] .move-runway,
+.gameplay-screen[data-guide-open="false"] .gameplay-feedback {
+  right: clamp(16px, 2vw, 28px);
+}
+
+/* ---------- judgment banner ---------- */
+
+/* Pops at the hit line for ~900ms, then falls away on the next elapsed tick.
+   Decorative only: the aria-live feedback line already announces the same
+   words, and duplicating them here would double-speak on every cue. */
+.judgment-banner {
+  position: absolute;
+  z-index: 8;
+  top: 80%;
+  left: 50%;
+  margin: 0;
+  padding: 8px 30px;
+  border: 3px solid;
+  border-radius: 12px;
+  font-size: clamp(28px, 3vw, 42px);
+  font-weight: 900;
+  line-height: 1.15;
+  white-space: nowrap;
+  /* Clears the note plate resting on the hit line, which is ~124px tall at
+     full scale, so the banner never lands on the cue the player is reading. */
+  transform: translate(-50%, calc(-100% - 88px));
+}
+
+.judgment-banner[data-outcome="good"] {
+  border-color: #7fe8c8;
+  color: #eafff8;
+  background: #1c8f76;
+}
+
+.judgment-banner[data-outcome="nearly"] {
+  border-color: #f7d98f;
+  color: #2a1608;
+  background: var(--stage-gold);
+}
+
+/* Never red, never a "miss": a wrong shape is an invitation, not a failure. */
+.judgment-banner[data-outcome="next"] {
+  border-color: #9d8ba0;
+  color: var(--stage-cream);
+  background: #4b3a4a;
+}
+
+.judgment-banner[data-outcome="unscoreable"] {
+  border-color: #6f5f6d;
+  color: var(--stage-cream-dim);
+  background: #332a33;
+}
+
+/* ---------- streak ---------- */
+
+/* Only appears from two in a row, so it stays quiet during ordinary play, and
+   it returns to nothing without any break animation. */
+.streak-badge {
+  position: absolute;
+  z-index: 6;
+  top: clamp(14px, 2.4dvh, 26px);
+  left: clamp(16px, 2vw, 28px);
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0;
+  padding: 7px 15px;
+  border: 2px solid var(--stage-gold-deep);
+  border-radius: 999px;
+  background: rgb(21 10 16 / 88%);
+}
+
+.streak-badge span {
+  color: var(--stage-gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.streak-badge strong {
+  color: var(--stage-cream);
+  font-size: clamp(20px, 2vw, 28px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.gameplay-screen .tracking-overlay {
+  border-radius: 12px;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 94%);
+}
+
+.gameplay-screen .tracking-overlay strong {
+  color: var(--stage-gold);
+}
+
 @media (min-width: 761px) and (max-height: 800px) {
   :root {
     --app-header-height: 64px;
@@ -3090,5 +3641,14 @@ code {
   .language-setting__options span,
   .motion-setting__toggle {
     border: 2px solid CanvasText;
+  }
+}
+
+/* KTV stage — short-viewport correction.
+   The shared rule centres the cue name with `margin-block: auto`, which leaves
+   a large void on the dark rail at demo-laptop heights. Keep it snug instead. */
+@media (min-width: 761px) and (max-height: 800px) {
+  .gameplay-screen .gameplay-hud h1 {
+    margin-block: 4px 16px;
   }
 }
