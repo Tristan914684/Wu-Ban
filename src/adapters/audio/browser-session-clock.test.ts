@@ -107,7 +107,7 @@ describe("project-owned Mo Li Hua arrangement", () => {
     expect(MO_LI_HUA_PATTERN_BEATS).toBe(56);
   });
 
-  it("schedules melody and cue automation against one audio clock", async () => {
+  it("schedules melody and reactive cue feedback against one audio clock", async () => {
     vi.stubGlobal("AudioContext", FakeAudioContext);
     const clock = new BrowserSessionClock();
 
@@ -127,6 +127,10 @@ describe("project-owned Mo Li Hua arrangement", () => {
         },
       ],
     });
+
+    expect(FakeAudioContext.latest?.sources).toHaveLength(1);
+
+    clock.playCorrectCue();
 
     expect(FakeAudioContext.latest?.sources).toHaveLength(2);
     expect(
