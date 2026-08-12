@@ -135,6 +135,9 @@ docs/
 │   ├── trend-and-supporter-spec.md
 │   ├── vertical-slice-spec.md
 │   └── user-personas.md
+├── superpowers/
+│   └── specs/
+│       └── 2026-08-12-calibration-completion-freeze-design.md
 ├── templates/
 │   ├── api-addition.md
 │   ├── architecture-rfc.md
@@ -277,6 +280,8 @@ docs/
 
 ### Templates, documentation, and enforcement
 
+- `superpowers/specs/2026-08-12-calibration-completion-freeze-design.md`
+  records the approved standing and seated calibration-completion contract.
 - `templates/*` are fill-in contracts for features, bugs, refactors, migrations,
   APIs, UI, performance, incidents, RFCs, postmortems, and retrospectives. Use
   the smallest template that covers the work.
