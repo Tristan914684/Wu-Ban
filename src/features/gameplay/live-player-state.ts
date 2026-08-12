@@ -52,16 +52,16 @@ export function livePlayerState(
       label:
         mode === "standing"
           ? isChinese
-            ? "已在中央"
-            : "Centered"
+            ? "已回到起始位置"
+            : "At start position"
           : isChinese
-            ? "双手已复位，准备好了"
-            : "Hands reset and ready",
+            ? "双手准备好了"
+            : "Hands ready",
       helper:
         mode === "standing"
           ? isChinese
-            ? "准备好了；轻轻迈出一步就会计数"
-            : "Ready; one gentle step is enough to count"
+            ? "准备好轻轻迈出下一步"
+            : "Ready for the next gentle step"
           : isChinese
             ? "做出下一个手势即可"
             : "Make the next hand gesture",
@@ -77,8 +77,8 @@ export function livePlayerState(
     helper:
       mode === "standing"
         ? isChinese
-          ? "这一步已看到；回到中央准备下一步"
-          : "Step seen; return to centre for the next move"
+          ? "已看到这一步；请将双脚放回起始标记"
+          : "Step seen; return both feet to the start marks"
         : isChinese
           ? "手势已看到；双手复位准备下一个"
           : "Gesture seen; reset your hands for the next move",

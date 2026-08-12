@@ -6,8 +6,17 @@ describe("live player state", () => {
   it("makes the centred standing state explicit", () => {
     expect(livePlayerState("en", "standing", { kind: "neutral" })).toEqual({
       key: "center",
-      label: "Centered",
-      helper: "Ready; one gentle step is enough to count",
+      label: "At start position",
+      helper: "Ready for the next gentle step",
+      symbol: "●",
+    });
+  });
+
+  it("uses hand-specific home language for seated play", () => {
+    expect(livePlayerState("en", "seated", { kind: "neutral" })).toEqual({
+      key: "center",
+      label: "Hands ready",
+      helper: "Make the next hand gesture",
       symbol: "●",
     });
   });
@@ -22,6 +31,7 @@ describe("live player state", () => {
     ).toMatchObject({
       key: "step-right",
       label: "Moving right",
+      helper: "Step seen; return both feet to the start marks",
       symbol: "→",
     });
   });

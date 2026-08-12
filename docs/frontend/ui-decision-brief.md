@@ -19,13 +19,15 @@ motion; do not drift into a generic dashboard or childish fitness game.
   lantern targets, and calm public-square geometry.
 - Density: sparse during player flow; balanced on results and supporter views.
 - Hierarchy: the current instruction or cue is primary during setup. During
-  scored play, the current cue and the next four to five authored cues share a
-  perspective move runway with a fixed action line. During camera rehearsal,
+  scored play, a warm-paper `You` rail, dominant `Now / Next` runway, and quiet
+  four-phase session rail remain visible together. The current cue is largest;
+  the next four to five authored cues approach a fixed action line. During camera rehearsal,
   the camera is the central proof surface; the
   current cue, move progress, centre/home guidance, and quality status sit in
   compact overlays rather than displacing it. During scored play, the playfield
-  spans the viewport and remains centred beneath a contained peripheral HUD.
-  A persistent camera-state panel beside the runway makes centred, left,
+  spans the available centre column without displacing the player-state rail.
+  A persistent camera-state panel beside the runway separates framing from the
+  calibrated home position and makes left,
   right, forward, back, gesture, and unclear states explicit in text and a
   position compass.
 - Component grammar: stable playfield, four ruled movement lanes, ordered cue
@@ -37,6 +39,9 @@ motion; do not drift into a generic dashboard or childish fitness game.
 
 - Display: self-hosted Noto Serif SC variable.
 - Body: self-hosted Noto Sans SC variable.
+- Distance-reading floor: immediate player-state labels are at least 24 CSS px;
+  Pause/Resume are at least 56 CSS px, and supporting gameplay copy is enlarged
+  before decorative content is retained.
 - Fallbacks: platform Chinese serif/sans families remain available if font
   loading fails.
 - Canvas: warm paper `#f1ece2`; ink `#1a1614`; secondary ink `#4a4339`;
@@ -57,8 +62,9 @@ motion; do not drift into a generic dashboard or childish fitness game.
   dependency.
 - Why this fits: the game needs timing and recovery motion, while repeated
   screens need stability and low main-thread cost.
-- Reduced motion: remove ambient movement and sweeping transitions; retain
-  slower bounded cue position, static targets, text, shape, and audio.
+- Reduced motion: remove ambient movement and sweeping transitions; replace
+  continuous cue travel with stable `Later / Next / Ready / Move now` steps
+  while preserving the audio-clock cue time, target, text, shape, and sound.
 - Preference placement: language and reduced dynamics live in the header's
   compact Display and comfort disclosure; language is an explicit two-choice
   control and reduced dynamics is a persistent on/off switch.
@@ -92,9 +98,13 @@ motion; do not drift into a generic dashboard or childish fitness game.
 - Setup screens without an aside span the available editorial grid rather than
   reserving an empty visual column. Split screens keep the supporting visual in
   the right-hand region until the content itself requires stacking.
-- The rehearsal camera remains horizontally centred and visually dominant
+- The rehearsal camera remains visually dominant in the main practice region
   from the 1280 x 720 target down to the supported 800 x 720 compact laptop
-  width; overlays collapse in detail before the proof surface is displaced.
+  width; its action/reset rail stays beside it, and secondary detail collapses
+  before the proof surface is displaced or clipped.
+- Scored play uses three columns at 1280 x 720 and a separately composed
+  two-column-plus-phase-row layout at 1024 x 720. Both keep the visible player
+  state, action line, Pause, Stop, and phase progress without page scrolling.
 - Compact reading: player setup stacks vertically; gameplay is unavailable on
   phone-sized viewports and offers a spectator explanation.
 - Wide/TV: preserve the 16:9 playfield and increase type/targets within safe

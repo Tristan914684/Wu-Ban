@@ -137,7 +137,8 @@ docs/
 │   └── user-personas.md
 ├── superpowers/
 │   ├── plans/
-│   │   └── 2026-08-12-calibration-completion-freeze.md
+│   │   ├── 2026-08-12-calibration-completion-freeze.md
+│   │   └── 2026-08-12-elderly-first-gameplay-feedback.md
 │   └── specs/
 │       └── 2026-08-12-calibration-completion-freeze-design.md
 ├── templates/
@@ -239,6 +240,9 @@ docs/
   is collected.
 - `ui-decision-brief.md` - selected product surface, editorial direction,
   motion budget, typography, assets, and state visuals; use before UI code.
+- `gameplay-ui-ux-audit.md` - implemented gameplay-state audit plus local
+  evidence and open real-camera/older-adult gates; use when reviewing scored
+  play, recovery, or progress.
 
 ### Product
 
@@ -284,6 +288,8 @@ docs/
 
 - `superpowers/plans/2026-08-12-calibration-completion-freeze.md` provides the
   test-first implementation sequence for the approved calibration correction.
+- `superpowers/plans/2026-08-12-elderly-first-gameplay-feedback.md` records the
+  test-first `Now / You / Next` gameplay redesign sequence.
 - `superpowers/specs/2026-08-12-calibration-completion-freeze-design.md`
   records the approved standing and seated calibration-completion contract.
 - `templates/*` are fill-in contracts for features, bugs, refactors, migrations,

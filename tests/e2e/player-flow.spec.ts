@@ -146,9 +146,40 @@ test("scored gameplay fills the viewport without page scrolling", async ({
     /向左一步|向右一步|轻轻向前|轻轻退回/,
   );
   const playerState = page.locator("[data-player-state]");
+  await expect(playerState).toBeVisible();
   await expect(playerState).toHaveAttribute("data-player-state", "center");
-  await expect(playerState).toContainText("已在中央");
-  await expect(playerState).toContainText("准备好了；轻轻迈出一步就会计数");
+  await expect(playerState).toContainText("已在画面内");
+  await expect(playerState).toContainText("已回到起始位置");
+  const playerStateBounds = await playerState.boundingBox();
+  expect(playerStateBounds?.width ?? 0).toBeGreaterThanOrEqual(200);
+  const stateLabelSize = await page.evaluate<number>(`(() => {
+    const label = document.querySelector(
+      ".player-state-panel__state-copy strong",
+    );
+    return label === null
+      ? 0
+      : Number.parseFloat(getComputedStyle(label).fontSize);
+  })()`);
+  expect(stateLabelSize).toBeGreaterThanOrEqual(24);
+  const pauseBounds = await page
+    .getByRole("button", { name: "暂停", exact: true })
+    .boundingBox();
+  expect(pauseBounds?.height ?? 0).toBeGreaterThanOrEqual(56);
+  await expect(
+    page
+      .getByRole("list", { name: "动作时间提示" })
+      .getByText("现在做", { exact: true }),
+  ).toBeVisible();
+  const timingStages = await page.evaluate<(string | null)[]>(`Array.from(
+    document.querySelectorAll("[data-move-note]"),
+    (note) => note.getAttribute("data-timing-stage"),
+  )`);
+  expect(new Set(timingStages).size).toBeGreaterThanOrEqual(3);
+  await expect(
+    page.getByRole("region", { name: "本局进度", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByLabel("第 8 步")).toHaveCount(0);
+  await expect(page.getByText("08 / 11", { exact: true })).toHaveCount(0);
 
   const accessibility = await new AxeBuilder({ page }).analyze();
   expect(
@@ -169,6 +200,39 @@ test("scored gameplay fills the viewport without page scrolling", async ({
   expect(dimensions.pageHeight).toBeLessThanOrEqual(
     dimensions.viewportHeight + 1,
   );
+});
+
+test("seated gameplay uses visible hand-specific readiness guidance", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await enterSyntheticMode(page);
+  await page
+    .getByRole("button", {
+      name: "02 坐姿手势 用左右手掌与食指完成节奏。",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "空间准备好了", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "位置没问题", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "听到节拍，开始倒数", exact: true })
+    .click();
+
+  const playerState = page.locator("[data-player-state]");
+  await expect(playerState).toBeVisible();
+  await expect(playerState).toContainText("双手清楚可见");
+  await expect(playerState).toContainText("双手准备好了");
+  await expect(
+    page.getByRole("group", { name: "您的移动位置" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "接下来的动作" }),
+  ).toContainText(/左手掌|右手掌|双手掌|食指保持/);
 });
 
 for (const route of [
@@ -258,14 +322,22 @@ test("pause, resume, and stop are keyboard reachable during play", async ({
     name: "朗读固定动作提示",
     exact: true,
   });
-  await expect(voiceGuidance).toBeVisible();
-  await voiceGuidance.check();
-  await expect(voiceGuidance).toBeChecked();
+  await expect(voiceGuidance).toHaveCount(0);
+  const firstNote = page.locator("[data-move-note]").first();
   await pause.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("已暂停", { exact: true })).toBeVisible();
+  await expect(voiceGuidance).toBeVisible();
+  await voiceGuidance.check();
+  await expect(voiceGuidance).toBeChecked();
+  const pausedStyle = await firstNote.getAttribute("style");
+  await page.waitForTimeout(350);
+  await expect(firstNote).toHaveAttribute("style", pausedStyle ?? "");
 
-  const resume = page.getByRole("button", { name: "继续", exact: true });
+  const resume = page.getByRole("button", {
+    name: "继续游戏",
+    exact: true,
+  });
   await resume.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("已暂停", { exact: true })).toBeHidden();
@@ -285,7 +357,9 @@ test("pause, resume, and stop are keyboard reachable during play", async ({
     });
     document.dispatchEvent(new Event("visibilitychange"));
   `);
-  await page.getByRole("button", { name: "继续", exact: true }).click();
+  await page
+    .getByRole("button", { name: "继续游戏", exact: true })
+    .click();
 
   const stop = page.getByRole("button", {
     name: "停止并退出",
@@ -440,6 +514,13 @@ test("classifier-backed tracking loss recovers and persists a quality-invalid re
     exact: true,
   });
   await expect(trackingOverlay).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText("不计分", { exact: true }).last()).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "暂停", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "停止并退出", exact: true }),
+  ).toBeVisible();
   await expect(trackingOverlay).toBeHidden({ timeout: 10_000 });
   await page
     .getByRole("button", {

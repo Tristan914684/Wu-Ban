@@ -730,6 +730,7 @@ export function App() {
             onTrackingLost={markTrackingLost}
             onTrackingRecovered={markTrackingRecovered}
             playback={state.playback}
+            reducedMotion={reducedMotion}
             source={state.source}
             syntheticTrackingScenario={syntheticTrackingScenario}
           />

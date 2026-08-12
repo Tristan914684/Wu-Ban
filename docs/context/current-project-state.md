@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 9 August 2026
+**Last verified:** 12 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,13 +21,11 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: 118 of 119 unit/component tests and all 7
-  IndexedDB integration/migration tests pass in the current worktree. The one
-  unit failure is an unrelated stale audio-clock assertion after the latest
-  reactive-cue change. In production Chrome, 23 of 25 journeys pass; the two
-  failures are stale accessibility text selectors for labels that the current
-  UI no longer exposes. Standing simulated play and classifier-backed tracking
-  recovery pass.
+- Automated application tests: all 135 unit/component tests and all 7 IndexedDB
+  integration/migration tests pass in the current worktree. All 27 production
+  Chrome journeys pass, including active/paused axe scans, seated state,
+  reduced-dynamics timing, keyboard pause/resume/stop, and classifier-backed
+  tracking recovery.
 - CI: least-privileged GitHub Actions workflow is implemented locally; its
   first remote run remains unverified until the branch is pushed to GitHub.
 - Production deployment: private Sites URL is live at
@@ -37,7 +35,7 @@ file after material verified changes.
 - Miora: official web studio identified, but the available Chrome session is
   signed out, so final asset generation remains blocked on owner sign-in.
 - CodeBuddy: owner-account submission evidence remains unverified.
-- Documentation operating system: active; 94 Markdown files and two repository
+- Documentation operating system: active; 98 Markdown files and two repository
   entrypoints validate locally with `node scripts/validate-docs.mjs`.
 
 ## Binding MVP direction
@@ -137,7 +135,7 @@ file after material verified changes.
   parts; rehearsal also reports the current classified direction. These
   changes have automated landmark and classifier evidence, but still require a
   representative human run on the demo camera.
-- Movement rehearsal now keeps the camera as the centred, dominant proof
+- Movement rehearsal now keeps the camera as the dominant proof
   surface. Move progress, the active cue, centre/home guidance, and tracking
   status are compact overlays. The rehearsal frame expands to a taller 16:10,
   laptop-width surface while the 4:3 camera and tracking geometry remain
@@ -155,6 +153,20 @@ file after material verified changes.
   fixed action line and four to five ordered upcoming cues. Cue position is
   derived from the existing audio-clock chart; scoring and narration contracts
   are unchanged, and every marker retains text, symbol, shape, and lane cues.
+- Scored play now uses the accepted elderly-first `Now / You / Next`
+  composition. A warm-paper `You` rail separates `In frame` from the calibrated
+  standing start or seated hand-ready state; the centre runway exposes
+  `Later / Next / Ready / Move now`; and a peripheral rail reduces progress to
+  four named phases. The route-level `08 / 11` counter and collapsible guide no
+  longer compete during play. Live-state labels are browser-guarded at 24 px or
+  larger, Pause/Resume at 56 px or larger, and 1280 x 720 plus 1024 x 720 fit
+  without page scrolling.
+- Pausing freezes the audio-clock-derived runway and opens a large comfort
+  surface with Resume, fixed-caption narration, and music/cue volume controls.
+  Tracking loss remains separate, explicitly says the segment is not scored,
+  and leaves Pause and Stop available. Active and paused gameplay pass axe in
+  production Chrome; manual VoiceOver and older-adult comprehension remain
+  open.
 - Scored play now captures each fresh movement as a short-lived event, so a
   correct step remains countable after the player promptly returns to centre
   instead of requiring them to hold the pose until cue evaluation. Centre

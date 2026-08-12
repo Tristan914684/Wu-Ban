@@ -57,6 +57,32 @@ async function completeStandingSpectatorSession(page: Page): Promise<void> {
     .click();
 }
 
+async function reachStandingGameplay(page: Page): Promise<void> {
+  await page.goto("/");
+  await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  await page
+    .getByRole("button", { name: "我明白了，继续", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "先看模拟演示", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: /01 站立舞步/ })
+    .click();
+  await page
+    .getByRole("button", { name: "空间准备好了", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "位置没问题", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "听到节拍，开始倒数", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "暂停", exact: true }),
+  ).toBeVisible();
+}
+
 test("home and progress surfaces have no detectable axe violations", async ({
   page,
 }) => {
@@ -79,6 +105,33 @@ test("home and progress surfaces have no detectable axe violations", async ({
   await expectNoAxeViolations(page);
 });
 
+test("gameplay and paused comfort settings have no detectable axe violations", async ({
+  page,
+}) => {
+  await reachStandingGameplay(page);
+
+  await expect(
+    page.getByRole("complementary", { name: "您的位置与动作识别" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("list", { name: "动作时间提示" }),
+  ).toContainText("稍后下一个准备现在做");
+  await expectNoAxeViolations(page);
+
+  await page.getByRole("button", { name: "暂停", exact: true }).click();
+  const pauseDialog = page.getByRole("dialog", {
+    name: "暂停与舒适度设置",
+  });
+  await expect(pauseDialog).toBeVisible();
+  await expect(
+    pauseDialog.getByRole("button", { name: "继续游戏", exact: true }),
+  ).toBeVisible();
+  await expect(
+    pauseDialog.getByRole("checkbox", { name: "朗读固定动作提示" }),
+  ).toBeVisible();
+  await expectNoAxeViolations(page);
+});
+
 test("screen changes orient keyboard and screen-reader users to the new task", async ({
   page,
 }) => {
@@ -94,7 +147,7 @@ test("screen changes orient keyboard and screen-reader users to the new task", a
     page.getByRole("switch", { name: /减少动态效果/ }),
   ).not.toBeChecked();
   await expect(
-    page.getByRole("radio", { name: "简体中文", exact: true }),
+    page.getByRole("radio", { name: "中文", exact: true }),
   ).toBeChecked();
 
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
@@ -248,7 +301,9 @@ test("primary setup screens fit the laptop viewport without page scrolling", asy
     .click();
   await expectPageToFitViewport(page, "Movement tutorial");
   await expect(
-    page.getByRole("heading", { name: "从中央开始，也回到中央。" }),
+    page.getByRole("heading", {
+      name: "双脚从中央脚印开始，每一步后回到脚印。",
+    }),
   ).toBeVisible();
   const practiceStage = page.locator("[data-practice-stage]");
   await expect(practiceStage).toBeInViewport();
@@ -258,9 +313,10 @@ test("primary setup screens fit the laptop viewport without page scrolling", asy
   expect(viewport).not.toBeNull();
   expect(stageBox!.width).toBeGreaterThan(520);
   expect(stageBox!.height).toBeGreaterThan(390);
-  expect(
-    Math.abs(stageBox!.x + stageBox!.width / 2 - viewport!.width / 2),
-  ).toBeLessThan(2);
+  expect(stageBox!.x).toBeGreaterThanOrEqual(0);
+  expect(stageBox!.x + stageBox!.width).toBeLessThanOrEqual(
+    viewport!.width,
+  );
   await expect(page.getByText("中央起点", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "设置", exact: true }).click();

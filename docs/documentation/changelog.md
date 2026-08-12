@@ -7,6 +7,18 @@ system.
 **Agent obligation:** Add an entry for changed authority, workflow, architecture
 governance, or product interpretation; omit typo-only edits.
 
+## 2026-08-12
+
+- Accepted PD-019 and implemented the elderly-first `Now / You / Next`
+  gameplay hierarchy with separate framing/home language, a visible
+  player-state rail, four timing stages, and four session phases.
+- Established browser-enforced viewing-distance floors for live state and
+  Pause/Resume, moved narration and volume controls into the paused comfort
+  surface, and kept tracking uncertainty explicitly unscored.
+- Added standing, seated, reduced-dynamics, pause, tracking-recovery,
+  accessibility, and 1280 x 720 / 1024 x 720 containment evidence while
+  retaining real-camera and older-adult usability as open gates.
+
 ## 2026-07-28
 
 - Removed the permanently reserved empty column from setup screens, kept

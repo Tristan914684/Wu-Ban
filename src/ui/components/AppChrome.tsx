@@ -51,7 +51,7 @@ export function AppChrome({
   children,
 }: AppChromeProps) {
   const copy = copyFor(language);
-  const phaseNumber = phaseNumbers[phase];
+  const phaseNumber = phase === "playing" ? undefined : phaseNumbers[phase];
   const [settingsOpen, setSettingsOpen] = useState(false);
   const settingsId = useId();
   const settingsRef = useRef<HTMLDivElement>(null);
