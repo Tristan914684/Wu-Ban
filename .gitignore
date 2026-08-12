@@ -8,3 +8,4 @@ test-results/
 .env.local
 *.log
 tmp/
+output/Wuban-Age-Well-Hackathon-Pitch.pptx
