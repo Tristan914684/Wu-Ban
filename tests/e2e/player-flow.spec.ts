@@ -497,7 +497,7 @@ test("a captured quality-invalid session earns participation but not trend input
     }),
   ).toBeVisible();
   await expect(
-    page.locator(".trend-rule-note strong"),
+    page.locator("[data-valid-session-count]"),
   ).toHaveText("0");
 });
 

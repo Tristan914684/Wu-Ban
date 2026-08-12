@@ -88,6 +88,46 @@ describe("personal trend rule", () => {
     expect(report.status).toBe("sustained-shift");
     expect(report.sustainedFamilies).toEqual(["beat", "memory"]);
     expect(report.ruleVersion).toBe(1);
+    expect(report.analysisWindow).toEqual({
+      startedAt: "2026-07-01T09:00:00.000Z",
+      endedAt: "2026-07-08T09:00:00.000Z",
+      dayCount: 8,
+    });
+    expect(report.metricEvidence?.beat).toMatchObject({
+      recentMedian: 0.62,
+      changeFromBaseline: -0.23,
+      shiftedRecentSessionCount: 2,
+      status: "repeated-change",
+    });
+    expect(report.metricEvidence?.shape).toMatchObject({
+      recentMedian: 0.85,
+      changeFromBaseline: 0,
+      shiftedRecentSessionCount: 0,
+      status: "within-usual-range",
+    });
+  });
+
+  it("reports that each area is still collecting when fewer than three recent sessions exist", () => {
+    const records = Array.from({ length: 6 }, (_, index) =>
+      datedSession(
+        index + 1,
+        index === 5
+          ? { measures: { beatAccuracy: 0.5, memoryControl: 0.5 } }
+          : {},
+      ),
+    );
+
+    const report = evaluatePersonalTrend(records, {
+      mode: "standing",
+      simulated: false,
+    });
+
+    expect(report.metricEvidence?.beat).toMatchObject({
+      recentMedian: 0.5,
+      shiftedRecentSessionCount: 1,
+      status: "collecting",
+    });
+    expect(report.sustainedFamilies).toEqual([]);
   });
 
   it("keeps deterministic demo history visibly simulated", () => {
@@ -101,5 +141,6 @@ describe("personal trend rule", () => {
     expect(report.simulated).toBe(true);
     expect(report.status).toBe("sustained-shift");
     expect(report.sustainedFamilies).toEqual(["beat", "memory"]);
+    expect(report.analysisWindow?.dayCount).toBeGreaterThanOrEqual(49);
   });
 });

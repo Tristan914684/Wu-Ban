@@ -26,6 +26,16 @@ test("simulated trend stays separate through grant and revoke", async ({
       exact: true,
     }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "模拟个人模式报告",
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("建议友好关心", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText(/节拍和顺序与停住在最近三次清晰游戏中至少两次出现重复变化/),
+  ).toBeVisible();
 
   await page
     .getByRole("button", { name: "隐私与分享", exact: true })

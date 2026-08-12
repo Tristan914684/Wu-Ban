@@ -11,6 +11,7 @@ import {
   poseFrame,
 } from "../../test-support/landmark-builders";
 import {
+  PerceptionStatus,
   TrackingLandmarkOverlay,
 } from "./TrackingLandmarkOverlay";
 import { trackingPartsLabel } from "./tracking-landmark-label";
@@ -50,5 +51,42 @@ describe("tracking landmark debug overlay", () => {
     );
 
     expect(screen.getByTitle("已识别双手：2 / 2")).toBeInTheDocument();
+  });
+
+  it("shows pose confidence and explains when the quality gate refuses a frame (BR-004)", () => {
+    render(
+      <PerceptionStatus
+        frame={poseFrame({ confidence: 0.4 })}
+        language="en"
+        mode="standing"
+        observation={{ kind: "unscoreable", reason: "low-confidence" }}
+      />,
+    );
+
+    expect(screen.getByText("ON-DEVICE POSE AI")).toBeInTheDocument();
+    expect(
+      screen.getByText("Required-landmark confidence 40%"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Frame not used — confidence is below the 45% gate."),
+    ).toBeInTheDocument();
+  });
+
+  it("does not invent a numeric hand-landmark confidence the SDK does not expose", () => {
+    render(
+      <PerceptionStatus
+        frame={handFrame([handLandmarks("left", "open")])}
+        language="en"
+        mode="seated"
+        observation={{ kind: "neutral" }}
+      />,
+    );
+
+    expect(screen.getByText("ON-DEVICE HAND AI")).toBeInTheDocument();
+    expect(screen.getByText("Model quality gate passed")).toBeInTheDocument();
+    expect(screen.queryByText(/confidence 100%/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Frame accepted — movement rules may use it."),
+    ).toBeInTheDocument();
   });
 });

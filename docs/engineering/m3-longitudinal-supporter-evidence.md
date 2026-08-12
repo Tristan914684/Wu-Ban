@@ -2,7 +2,7 @@
 
 **Status:** Locally verified; external WeChat owner-test gate open  
 **Owner:** Product and application engineering  
-**Last verified:** 28 July 2026
+**Last verified:** 12 August 2026
 **Reference when:** Reporting or changing personal trends, supporter consent,
 check-in preview, local sharing persistence, or notification transport.  
 **Agent obligation:** Never equate a local preview or unavailable adapter with
@@ -21,9 +21,14 @@ an externally delivered message.
   five valid sessions.
 - A sustained prototype shift requires at least two metric families in at
   least two of the last three later valid sessions.
+- The progress surface renders a structured personal pattern report from the
+  same versioned result. It names the analysed period and clear-session count,
+  compares each metric family's usual median with the latest three-session
+  median, marks repeated changes, explains the flag rule and possible everyday
+  influences, and gives a non-diagnostic check-in next step.
 - Deterministic simulated history contains eight records, is generated outside
-  personal history, and remains visibly labelled at every trend and sharing
-  consumer.
+  personal history, spans eight weekly observations, and remains visibly
+  labelled at every trend and sharing consumer.
 - Supporter sharing is off by default and requires a separate, purpose-specific
   local confirmation.
 - Sharing hydration and writes fail closed: unavailable local consent state is
@@ -57,9 +62,10 @@ upgrade.
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 31 files, 97 tests passed |
-| `npm run test:integration` | 3 files, 6 tests passed |
-| `npm run test:e2e` | 4 files, 24 Chrome tests passed |
+| `npm test` | 36 files, 125 tests passed |
+| `npm run test:integration` | 3 files, 7 tests passed |
+| `npx playwright test tests/e2e/progress-sharing.spec.ts` | 3 Chrome tests passed |
+| `npx playwright test tests/e2e/player-flow.spec.ts --grep "captured quality-invalid"` | 1 Chrome test passed after the report count selector replaced the removed side-card selector |
 
 Named tests cover BR-005, BR-008 through BR-013, the PRD 80% scoreable-input
 threshold, source/mode separation, insufficient history, repeated-family
@@ -76,7 +82,7 @@ removed before history or trend evaluation.
 
 ## Local browser evidence
 
-At 1440 x 900 in the Codex in-app browser, with production E2E regression at
+At 1280 x 720 in the Codex in-app browser, with production E2E regression at
 1280 x 720 in Chrome:
 
 1. Real local history showed zero trend-valid captured sessions and explicitly
@@ -104,6 +110,12 @@ At 1440 x 900 in the Codex in-app browser, with production E2E regression at
 14. An unavailable local consent store showed a persistent recovery action,
     made no sharing-off claim, exposed no grant/send controls, and recovered
     after a fresh read. A separate write fault left the grant inactive.
+15. The simulated personal pattern report showed an eight-week period, eight
+    clear sessions, usual-versus-recent values, repeated Beat/Memory flags, the
+    transparent method, possible everyday influences, and a neutral check-in
+    next step. At 1280 x 720 the report used a 1000-CSS-pixel reading width; at
+    640 CSS pixels it collapsed to one evidence column with zero horizontal
+    overflow. No console warning or error was present.
 
 ## Open gates
 

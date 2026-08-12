@@ -10,6 +10,7 @@
 ## Outcome
 
 A player can review a transparent personal movement-and-attention pattern,
+read a structured report that flags sustained changes worth checking in about,
 switch to an unmistakably simulated trend demonstration, separately grant or
 revoke one supporter scope, and preview a calm non-diagnostic check-in.
 
@@ -38,6 +39,8 @@ channel or credentials have yet been selected.
 - Median and median absolute deviation over the first five comparable valid
   sessions.
 - A versioned prototype shift rule over Beat, Shape, Flow, and Memory.
+- A structured longitudinal report with the analysed period, recent-versus-
+  usual evidence, repeated-change flags, uncertainty, and a neutral next step.
 - Sharing off by default.
 - A separate purpose-specific local supporter grant and revocation.
 - Exact disclosure of supporter-visible fields.
@@ -85,6 +88,7 @@ preview-only, transport unavailable, and duplicate command.
 | TS-010 | Transport fails closed. | Missing WeChat test configuration yields `unavailable` and makes no network call. |
 | TS-011 | Commands are idempotent. | The same event and grant produce the same command ID and cannot be sent twice. |
 | TS-012 | Audit data is minimal. | Grant/revoke and send outcomes contain IDs, versions, times, and result codes, never message bodies or raw provider identifiers. |
+| TS-013 | A trend result is explained as a report, not a verdict. | The progress surface names the analysed period and valid-session count, shows usual and recent values per metric family, flags only repeated prototype changes, explains possible everyday influences, and suggests a check-in without identifying a condition or cause. |
 
 ## Prototype trend rule version 1
 

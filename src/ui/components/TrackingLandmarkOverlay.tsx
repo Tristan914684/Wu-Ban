@@ -4,6 +4,7 @@ import {
   POSE_INDEX,
   TRACKING_CONFIDENCE_THRESHOLD,
   type LandmarkFrame,
+  type MovementObservation,
   type NormalizedLandmark,
 } from "../../domain/movement/landmarks";
 import { trackingPartsLabel } from "./tracking-landmark-label";
@@ -61,6 +62,105 @@ interface TrackingLandmarkOverlayProps {
   readonly frame: LandmarkFrame | null;
   readonly language: Language;
   readonly mode: SessionMode;
+}
+
+interface PerceptionStatusProps extends TrackingLandmarkOverlayProps {
+  readonly observation: MovementObservation | null;
+}
+
+function refusalCopy(
+  reason: Extract<MovementObservation, { readonly kind: "unscoreable" }>["reason"],
+  language: Language,
+): string {
+  const isChinese = language === "zh";
+  switch (reason) {
+    case "low-confidence":
+      return isChinese
+        ? `此画面未使用——可信度低于 ${Math.round(TRACKING_CONFIDENCE_THRESHOLD * 100)}% 的门槛。`
+        : `Frame not used — confidence is below the ${Math.round(TRACKING_CONFIDENCE_THRESHOLD * 100)}% gate.`;
+    case "missing-landmarks":
+      return isChinese
+        ? "此画面未使用——所需的身体或手部位置不完整。"
+        : "Frame not used — required body or hand landmarks are missing.";
+    case "multiple-people":
+      return isChinese
+        ? "此画面未使用——画面中出现了多位玩家。"
+        : "Frame not used — more than one player is visible.";
+  }
+}
+
+function poseGateConfidence(frame: LandmarkFrame): number {
+  if (frame.kind !== "pose") {
+    return 0;
+  }
+  const required = Object.values(POSE_INDEX).map(
+    (index) => frame.landmarks[index],
+  );
+  if (required.some((landmark) => landmark === undefined)) {
+    return 0;
+  }
+  return Math.min(
+    ...required.map((landmark) =>
+      Math.min(landmark!.visibility, landmark!.presence),
+    ),
+  );
+}
+
+export function PerceptionStatus({
+  frame,
+  language,
+  mode,
+  observation,
+}: PerceptionStatusProps) {
+  const isChinese = language === "zh";
+  const refused = observation?.kind === "unscoreable";
+  const modelLabel =
+    mode === "standing"
+      ? isChinese
+        ? "本机姿态 AI"
+        : "ON-DEVICE POSE AI"
+      : isChinese
+        ? "本机手势 AI"
+        : "ON-DEVICE HAND AI";
+  const confidenceLabel =
+    frame === null
+      ? isChinese
+        ? "正在等待画面"
+        : "Waiting for a frame"
+      : frame.kind === "pose"
+        ? isChinese
+          ? `所需关键点可信度 ${Math.round(poseGateConfidence(frame) * 100)}%`
+          : `Required-landmark confidence ${Math.round(poseGateConfidence(frame) * 100)}%`
+        : frame.hands.length === 0
+          ? isChinese
+            ? "尚未识别到手部"
+            : "Hands not detected"
+          : isChinese
+            ? "模型质量门槛已通过"
+            : "Model quality gate passed";
+  const decision =
+    observation === null
+      ? isChinese
+        ? "模型正在检查所需位置。"
+        : "The model is checking the required landmarks."
+      : refused
+        ? refusalCopy(observation.reason, language)
+        : isChinese
+          ? "画面已采用——动作规则可以使用这些位置。"
+          : "Frame accepted — movement rules may use it.";
+
+  return (
+    <div
+      aria-atomic="true"
+      aria-live="polite"
+      className="perception-status"
+      data-decision={refused ? "refused" : "accepted"}
+    >
+      <span>{modelLabel}</span>
+      <strong>{confidenceLabel}</strong>
+      <small>{decision}</small>
+    </div>
+  );
 }
 
 export function FramingTargetOverlay({

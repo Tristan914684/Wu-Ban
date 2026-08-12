@@ -11,7 +11,10 @@ import {
   calibrateStanding,
   type StandingCalibration,
 } from "../../domain/movement/standing-classifier";
-import type { LandmarkFrame } from "../../domain/movement/landmarks";
+import type {
+  LandmarkFrame,
+  MovementObservation,
+} from "../../domain/movement/landmarks";
 import {
   INITIAL_TRACKING_STABILITY,
   updateTrackingStability,
@@ -20,6 +23,7 @@ import { Button } from "../../ui/primitives/Button";
 import { StepLayout } from "../../ui/components/StepLayout";
 import {
   FramingTargetOverlay,
+  PerceptionStatus,
   TrackingLandmarkOverlay,
 } from "../../ui/components/TrackingLandmarkOverlay";
 import { trackingPartsLabel } from "../../ui/components/tracking-landmark-label";
@@ -63,6 +67,8 @@ export function CalibrationScreen({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [state, setState] = useState<CalibrationState>({ kind: "loading" });
   const [trackedFrame, setTrackedFrame] = useState<LandmarkFrame | null>(null);
+  const [perceptionObservation, setPerceptionObservation] =
+    useState<MovementObservation | null>(null);
   const isChinese = language === "zh";
 
   useEffect(() => {
@@ -119,8 +125,19 @@ export function CalibrationScreen({
                 nextCalibration =
                   averageStandingCalibrations(standingSamples) ?? calibration;
                 scoreable = true;
+                setPerceptionObservation({ kind: "neutral" });
               } else {
                 standingSamples.length = 0;
+                const reason =
+                  frame.personCount > 1
+                    ? "multiple-people"
+                    : frame.personCount === 0 || frame.landmarks.length < 29
+                      ? "missing-landmarks"
+                      : "low-confidence";
+                setPerceptionObservation({
+                  kind: "unscoreable",
+                  reason,
+                });
                 issue =
                   frame.personCount > 1
                     ? "multiple-people"
@@ -130,6 +147,7 @@ export function CalibrationScreen({
               }
             } else {
               const observation = classifySeated(frame);
+              setPerceptionObservation(observation);
               if (observation.kind !== "unscoreable") {
                 scoreable = true;
               } else {
@@ -221,6 +239,12 @@ export function CalibrationScreen({
                 frame={trackedFrame}
                 language={language}
                 mode={mode}
+              />
+              <PerceptionStatus
+                frame={trackedFrame}
+                language={language}
+                mode={mode}
+                observation={perceptionObservation}
               />
             </>
           ) : (

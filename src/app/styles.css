@@ -1116,6 +1116,50 @@ code {
   vector-effect: non-scaling-stroke;
 }
 
+.perception-status {
+  position: absolute;
+  z-index: 5;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: min(55%, 270px);
+  gap: 3px;
+  padding: 9px 11px;
+  border: 1px solid #8ee0a8;
+  border-radius: 3px;
+  color: var(--paper-light);
+  background: rgb(26 22 20 / 88%);
+  box-shadow: 2px 3px 0 rgb(26 22 20 / 30%);
+  pointer-events: none;
+}
+
+.perception-status[data-decision="refused"] {
+  border-color: #e9bd69;
+  background: rgb(71 45 27 / 94%);
+}
+
+.perception-status > span {
+  color: #8ee0a8;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.perception-status[data-decision="refused"] > span {
+  color: #f3d68f;
+}
+
+.perception-status > strong {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.perception-status > small {
+  color: rgb(250 246 237 / 82%);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .camera-stage__status {
   position: absolute;
   top: 12px;
@@ -2549,40 +2593,179 @@ code {
   min-width: 142px;
 }
 
-.trend-measures {
+.personal-pattern-report {
   display: grid;
-  max-width: 760px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid var(--rule);
-  border-left: 1px solid var(--rule);
+  width: min(100%, 1000px);
+  gap: 22px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 2px solid var(--ink);
+  border-radius: 4px 9px 3px 7px;
+  background:
+    repeating-linear-gradient(
+      -1deg,
+      transparent 0 24px,
+      rgb(74 67 57 / 3%) 25px 26px
+    ),
+    var(--paper-light);
+  box-shadow: var(--shadow-warm);
 }
 
-.trend-measures > div {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 16px;
-  padding: 18px;
-  border-right: 1px solid var(--rule);
+.personal-pattern-report__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 18px;
   border-bottom: 1px solid var(--rule);
 }
 
-.trend-measures dt {
-  font-weight: 720;
+.personal-pattern-report__header span,
+.pattern-flag > span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
 }
 
-.trend-measures dd {
-  margin: 0;
+.personal-pattern-report__header h2 {
+  margin: 5px 0 0;
   font-family:
     "Noto Serif SC Variable", "Songti SC", serif;
-  font-size: 28px;
+  font-size: clamp(30px, 3vw, 42px);
+  font-weight: 520;
+  line-height: 1.08;
 }
 
-.trend-measures .trend-measures__status {
-  grid-column: 1 / -1;
+.personal-pattern-report__meta {
+  display: grid;
+  gap: 7px;
+}
+
+.personal-pattern-report__meta p {
+  max-width: 27ch;
   margin: 0;
   color: var(--ink-soft);
-  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.55;
+  text-align: right;
+}
+
+.pattern-flag {
+  display: grid;
+  gap: 7px;
+  padding: 17px 19px;
+  border-left: 6px solid var(--jade);
+  background: #dfe8df;
+}
+
+.pattern-flag[data-state="sustained-shift"] {
+  border-color: var(--caution);
+  background: #f3dfb0;
+}
+
+.pattern-flag strong {
+  font-family:
+    "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: clamp(25px, 2.5vw, 34px);
+  font-weight: 560;
+}
+
+.pattern-flag p,
+.pattern-interpretation p,
+.pattern-method p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.pattern-evidence {
+  display: grid;
+  gap: 12px;
+}
+
+.pattern-evidence h3,
+.pattern-interpretation h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.pattern-evidence dl {
+  display: grid;
+  margin: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.pattern-evidence dl > div {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.25fr) repeat(2, minmax(105px, 0.7fr));
+  gap: 10px 18px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.pattern-evidence dt,
+.pattern-evidence dd {
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  margin: 0;
+}
+
+.pattern-evidence dt > span,
+.pattern-evidence dd > span {
+  color: var(--ink-soft);
   font-size: 14px;
+  line-height: 1.4;
+}
+
+.pattern-evidence dd > strong {
+  font-family:
+    "Noto Serif SC Variable", "Songti SC", serif;
+  font-size: 25px;
+  font-weight: 560;
+}
+
+.pattern-evidence__finding {
+  grid-column: 1 / -1;
+  display: flex !important;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pattern-evidence__finding > strong {
+  font-family: inherit !important;
+  font-size: 15px !important;
+  text-align: right;
+}
+
+.pattern-evidence [data-status="repeated-change"]
+  .pattern-evidence__finding > strong {
+  color: #714711;
+}
+
+.pattern-method {
+  padding: 15px 17px;
+  border: 1px solid var(--rule);
+  background: rgb(239 226 198 / 48%);
+}
+
+.pattern-method summary {
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 44px;
+}
+
+.pattern-method p {
+  padding: 8px 0 3px;
+}
+
+.pattern-interpretation {
+  display: grid;
+  gap: 9px;
+  padding-top: 4px;
 }
 
 .trend-rule-note,
@@ -2774,6 +2957,14 @@ code {
   border-radius: 10px;
   object-fit: cover;
   transform: translateY(-50%);
+}
+
+.gameplay-screen .perception-status {
+  top: calc(50% + clamp(112px, 12vw, 170px));
+  right: auto;
+  left: var(--monitor-x);
+  width: var(--monitor-w);
+  box-sizing: border-box;
 }
 
 /* The cue name is already the largest thing on the rail. Repeating it over the
@@ -3523,8 +3714,22 @@ code {
     padding: 18px;
   }
 
-  .trend-measures {
-    grid-template-columns: 1fr;
+  .personal-pattern-report__header {
+    display: grid;
+  }
+
+  .personal-pattern-report__meta p {
+    max-width: none;
+    text-align: left;
+  }
+
+  .pattern-evidence dl > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pattern-evidence dt,
+  .pattern-evidence__finding {
+    grid-column: 1 / -1;
   }
 }
 
@@ -3593,6 +3798,20 @@ code {
     max-width: 100%;
     white-space: normal;
   }
+
+  .pattern-evidence dl > div {
+    grid-template-columns: 1fr;
+  }
+
+  .pattern-evidence dt,
+  .pattern-evidence__finding {
+    grid-column: 1;
+  }
+
+  .pattern-evidence__finding {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3618,7 +3837,10 @@ code {
   .button,
   .camera-stage,
   .result-score,
-  .dusk-art {
+  .dusk-art,
+  .personal-pattern-report,
+  .pattern-flag,
+  .perception-status {
     border: 2px solid CanvasText;
   }
 

@@ -23,6 +23,7 @@ import type {
   SessionMode,
 } from "../../domain/chart/session-chart";
 import type {
+  LandmarkFrame,
   MovementCue,
   MovementObservation,
 } from "../../domain/movement/landmarks";
@@ -58,6 +59,7 @@ import {
   type MovementCaptureLatch,
 } from "../../domain/gameplay/captured-movement";
 import { Button } from "../../ui/primitives/Button";
+import { PerceptionStatus } from "../../ui/components/TrackingLandmarkOverlay";
 import { livePlayerState } from "./live-player-state";
 
 type TrackingIssue = Extract<
@@ -222,6 +224,7 @@ export function GameplayScreen({
   const completedRef = useRef(false);
   const trackingLostAtRef = useRef<number | null>(null);
   const lastInferenceAtRef = useRef<number | null>(null);
+  const latestLandmarkFrameRef = useRef<LandmarkFrame | null>(null);
   const syntheticTrackingFaultRef = useRef(false);
   const playbackRef = useRef(playback);
   const performanceStartRef = useRef(0);
@@ -254,6 +257,8 @@ export function GameplayScreen({
   const [detectedAction, setDetectedAction] = useState("neutral");
   const [liveObservation, setLiveObservation] =
     useState<MovementObservation>({ kind: "neutral" });
+  const [visibleLandmarkFrame, setVisibleLandmarkFrame] =
+    useState<LandmarkFrame | null>(null);
   const [provisionalValid, setProvisionalValid] = useState(false);
   const [feedback, setFeedback] = useState(
     language === "zh" ? "跟着灯笼来" : "Follow the lantern",
@@ -451,6 +456,9 @@ export function GameplayScreen({
         if (timestampMs - lastUiUpdate >= 100) {
           lastUiUpdate = timestampMs;
           setElapsedMs(elapsed);
+          if (source === "camera") {
+            setVisibleLandmarkFrame(latestLandmarkFrameRef.current);
+          }
         }
 
         if (
@@ -466,6 +474,7 @@ export function GameplayScreen({
           lastInferenceAtRef.current = timestampMs;
           const inferenceStartedAtMs = performance.now();
           const frame = detector.detect(videoRef.current, timestampMs);
+          latestLandmarkFrameRef.current = frame;
           const inferenceDurationMs =
             performance.now() - inferenceStartedAtMs;
           const observation =
@@ -723,14 +732,22 @@ export function GameplayScreen({
         data-gameplay-stage
       >
         {source === "camera" ? (
-          <video
-            aria-label={isChinese ? "当前摄像头画面" : "Current camera view"}
-            autoPlay
-            data-camera-preview
-            muted
-            playsInline
-            ref={videoRef}
-          />
+          <>
+            <video
+              aria-label={isChinese ? "当前摄像头画面" : "Current camera view"}
+              autoPlay
+              data-camera-preview
+              muted
+              playsInline
+              ref={videoRef}
+            />
+            <PerceptionStatus
+              frame={visibleLandmarkFrame}
+              language={language}
+              mode={mode}
+              observation={liveObservation}
+            />
+          </>
         ) : (
           <div className="gameplay-stage__paper" aria-hidden="true" />
         )}

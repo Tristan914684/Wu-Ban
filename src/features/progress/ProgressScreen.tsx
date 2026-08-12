@@ -1,15 +1,13 @@
 import type { Language } from "../../content/copy";
 import type { SessionMode } from "../../domain/chart/session-chart";
-import type {
-  MetricFamily,
-  TrendReport,
-} from "../../domain/trend/personal-trend";
+import type { TrendReport } from "../../domain/trend/personal-trend";
 import {
   LocalDataNotice,
   type LocalDataStatus,
 } from "../../ui/components/LocalDataNotice";
 import { Button } from "../../ui/primitives/Button";
 import { StepLayout } from "../../ui/components/StepLayout";
+import { PersonalPatternReport } from "./PersonalPatternReport";
 
 interface ProgressScreenProps {
   readonly language: Language;
@@ -23,13 +21,6 @@ interface ProgressScreenProps {
   readonly onRetryLocalData: () => void;
   readonly onToggleSimulation: () => void;
 }
-
-const FAMILY_LABELS: Record<MetricFamily, readonly [string, string]> = {
-  beat: ["节拍", "Beat"],
-  shape: ["动作方向", "Shape"],
-  flow: ["接续动作", "Flow"],
-  memory: ["顺序与停住", "Memory"],
-};
 
 function statusCopy(
   report: TrendReport,
@@ -68,10 +59,6 @@ function statusCopy(
   }
 }
 
-function percent(value: number): string {
-  return `${Math.round(value * 100)}%`;
-}
-
 export function ProgressScreen({
   language,
   report,
@@ -105,29 +92,6 @@ export function ProgressScreen({
 
   return (
     <StepLayout
-      aside={
-        personalDataUnavailable ? undefined : (
-          <div className="trend-rule-note">
-            <small>
-              {isChinese
-                ? "原型趋势规则 · 版本 1"
-                : "PROTOTYPE TREND RULE · V1"}
-            </small>
-            <strong>{report.validSessionCount}</strong>
-            <span>{isChinese ? "次清晰记录" : "clear sessions"}</span>
-            <p className="weekly-participation">
-              {isChinese
-                ? `本周参与 ${weeklyParticipation} 次`
-                : `${weeklyParticipation} dance${weeklyParticipation === 1 ? "" : "s"} this week`}
-            </p>
-            <p>
-              {isChinese
-                ? "只与同一种游戏方式下，自己的清晰记录比较。尚未经过临床验证。"
-                : "Compares only your own clear sessions in the same mode. Not clinically validated."}
-            </p>
-          </div>
-        )
-      }
       description={<p>{status.description}</p>}
       eyebrow={isChinese ? "§ 我的节奏" : "§ MY RHYTHM"}
       title={status.title}
@@ -172,24 +136,12 @@ export function ProgressScreen({
           </Button>
         </div>
       )}
-      {personalDataUnavailable || report.baselines === null ? null : (
-        <dl className="trend-measures">
-          {(Object.keys(FAMILY_LABELS) as MetricFamily[]).map((family) => (
-            <div key={family}>
-              <dt>{FAMILY_LABELS[family][isChinese ? 0 : 1]}</dt>
-              <dd>{percent(report.baselines![family].median)}</dd>
-              <dd className="trend-measures__status">
-                {report.sustainedFamilies.includes(family)
-                  ? isChinese
-                    ? "近期重复变化"
-                    : "Repeated recent change"
-                  : isChinese
-                    ? "没有重复变化"
-                    : "No repeated change"}
-              </dd>
-            </div>
-          ))}
-        </dl>
+      {personalDataUnavailable ? null : (
+        <PersonalPatternReport
+          language={language}
+          report={report}
+          weeklyParticipation={weeklyParticipation}
+        />
       )}
       {!personalDataUnavailable &&
       !report.simulated &&

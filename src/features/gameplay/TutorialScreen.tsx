@@ -19,6 +19,7 @@ import { PracticePositionGuide } from "../../ui/components/PracticePositionGuide
 import { Button } from "../../ui/primitives/Button";
 import {
   FramingTargetOverlay,
+  PerceptionStatus,
   TrackingLandmarkOverlay,
 } from "../../ui/components/TrackingLandmarkOverlay";
 import { trackingPartsLabel } from "../../ui/components/tracking-landmark-label";
@@ -340,11 +341,19 @@ export function TutorialScreen({
                 mode={mode}
               />
               {source === "camera" ? (
-                <TrackingLandmarkOverlay
-                  frame={trackedFrame}
-                  language={language}
-                  mode={mode}
-                />
+                <>
+                  <TrackingLandmarkOverlay
+                    frame={trackedFrame}
+                    language={language}
+                    mode={mode}
+                  />
+                  <PerceptionStatus
+                    frame={trackedFrame}
+                    language={language}
+                    mode={mode}
+                    observation={observation}
+                  />
+                </>
               ) : null}
               {source === "camera" ? (
                 <div className="practice-tracking-readout">

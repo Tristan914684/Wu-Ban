@@ -43,6 +43,38 @@ describe("progress and sharing UI", () => {
     expect(screen.getByText("这不是诊断。")).toBeInTheDocument();
   });
 
+  it("turns the sustained prototype signal into a transparent longitudinal report (BR-012, BR-013)", () => {
+    render(
+      <ProgressScreen
+        excludedSimulatedCount={0}
+        language="en"
+        localDataStatus="ready"
+        onBack={vi.fn()}
+        onRetryLocalData={vi.fn()}
+        onModeChange={vi.fn()}
+        onOpenSharing={vi.fn()}
+        onToggleSimulation={vi.fn()}
+        report={simulatedReport()}
+        weeklyParticipation={2}
+      />,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Simulated pattern report" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Check-in suggested")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Beat and Memory changed repeatedly/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("21 points below usual")).toBeInTheDocument();
+    expect(
+      screen.getByText(/An area is flagged only when it crosses its personal threshold/),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/does not identify a condition or explain its cause/),
+    ).toBeInTheDocument();
+  });
+
   it("keeps sharing off until a separate confirmation (BR-009)", () => {
     const onGrant = vi.fn().mockResolvedValue(undefined);
     const onSend = vi.fn().mockResolvedValue({

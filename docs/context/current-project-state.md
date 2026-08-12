@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 9 August 2026
+**Last verified:** 12 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,13 +21,13 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: 118 of 119 unit/component tests and all 7
-  IndexedDB integration/migration tests pass in the current worktree. The one
-  unit failure is an unrelated stale audio-clock assertion after the latest
-  reactive-cue change. In production Chrome, 23 of 25 journeys pass; the two
-  failures are stale accessibility text selectors for labels that the current
-  UI no longer exposes. Standing simulated play and classifier-backed tracking
-  recovery pass.
+- Automated application tests: all 125 unit/component tests and all 7
+  IndexedDB integration/migration tests pass in the current worktree. A full
+  production-Chrome run passed 22 of 25 journeys; the trend selector affected
+  by this change was corrected and then passed targeted, leaving the two
+  previously recorded stale accessibility text selectors for labels that the
+  current UI no longer exposes. Standing simulated play, classifier-backed
+  tracking recovery, and the longitudinal report journey pass.
 - CI: least-privileged GitHub Actions workflow is implemented locally; its
   first remote run remains unverified until the branch is pushed to GitHub.
 - Production deployment: private Sites URL is live at
@@ -231,6 +231,21 @@ file after material verified changes.
   supporter grant, revocation, preview-only check-in, and immediate pre-send
   consent/binding revalidation are verified locally and in the browser. No
   WeChat delivery has been attempted or claimed.
+- Progress now presents a structured personal pattern report rather than only
+  baseline percentages. It names the period and valid-session count, compares
+  the first-five usual median with the latest-three median for Beat, Shape,
+  Flow, and Memory, flags only repeated prototype changes, explains the rule
+  and common non-medical influences, and offers a friendly check-in next step.
+  The simulated example spans eight weekly records and is labelled again
+  inside the report. The 1280 x 720 and 640-CSS-pixel reading layouts were
+  visually checked without horizontal overflow or browser-console warnings.
+- Calibration and movement practice retain the landmark skeleton and now show
+  a visible on-device AI quality readout. Standing reports the lowest required-
+  landmark confidence used by the gate; seated reports the provider quality-
+  gate state without inventing per-landmark confidence that the SDK omits.
+  Scored camera play shows the same accepted/refused explanation at a bounded
+  10-Hz UI update rate, while uncertain frames remain unscoreable rather than
+  misses.
 - Real-camera, demo-device, final music, Miora, older-adult, WeChat,
   authenticated production, and remote CI evidence remain open.
 - KI-003 is resolved by the measured hand-landmark provider, separate seated

@@ -28,6 +28,25 @@ export interface RecentTrendSession {
   readonly shiftedFamilies: readonly MetricFamily[];
 }
 
+export type MetricPatternStatus =
+  | "collecting"
+  | "within-usual-range"
+  | "repeated-change";
+
+export interface MetricTrendEvidence {
+  readonly baselineMedian: number;
+  readonly recentMedian: number | null;
+  readonly changeFromBaseline: number | null;
+  readonly shiftedRecentSessionCount: number;
+  readonly status: MetricPatternStatus;
+}
+
+export interface TrendAnalysisWindow {
+  readonly startedAt: string;
+  readonly endedAt: string;
+  readonly dayCount: number;
+}
+
 export interface TrendReport {
   readonly ruleVersion: typeof TREND_RULE_VERSION;
   readonly eventId: string;
@@ -38,7 +57,9 @@ export interface TrendReport {
   readonly sessionsNeeded: number;
   readonly baselineSessionIds: readonly string[];
   readonly recentSessions: readonly RecentTrendSession[];
+  readonly analysisWindow: TrendAnalysisWindow | null;
   readonly baselines: Readonly<Record<MetricFamily, MetricBaseline>> | null;
+  readonly metricEvidence: Readonly<Record<MetricFamily, MetricTrendEvidence>> | null;
   readonly sustainedFamilies: readonly MetricFamily[];
 }
 
@@ -84,6 +105,33 @@ function baselineFor(values: readonly number[]): MetricBaseline {
   };
 }
 
+function rounded(value: number): number {
+  return Number(value.toFixed(4));
+}
+
+function analysisWindowFor(
+  sessions: readonly SessionSummary[],
+): TrendAnalysisWindow | null {
+  const first = sessions.at(0);
+  const last = sessions.at(-1);
+  if (first === undefined || last === undefined) {
+    return null;
+  }
+  const millisecondsPerDay = 24 * 60 * 60 * 1_000;
+  const dayCount = Math.max(
+    1,
+    Math.ceil(
+      (Date.parse(last.completedAt) - Date.parse(first.completedAt)) /
+        millisecondsPerDay,
+    ) + 1,
+  );
+  return {
+    startedAt: first.completedAt,
+    endedAt: last.completedAt,
+    dayCount,
+  };
+}
+
 function emptyReport(input: {
   readonly mode: SessionMode;
   readonly simulated: boolean;
@@ -99,7 +147,9 @@ function emptyReport(input: {
     sessionsNeeded: Math.max(0, 5 - input.validSessionCount),
     baselineSessionIds: [],
     recentSessions: [],
+    analysisWindow: null,
     baselines: null,
+    metricEvidence: null,
     sustainedFamilies: [],
   };
 }
@@ -121,10 +171,14 @@ export function evaluatePersonalTrend(
     .sort((left, right) => left.completedAt.localeCompare(right.completedAt));
 
   if (comparable.length < 5) {
-    return emptyReport({
+    const report = emptyReport({
       ...input,
       validSessionCount: comparable.length,
     });
+    return {
+      ...report,
+      analysisWindow: analysisWindowFor(comparable),
+    };
   }
 
   const baselineSessions = comparable.slice(0, 5);
@@ -149,11 +203,38 @@ export function evaluatePersonalTrend(
         baselines[family].unfavourableThreshold,
     ),
   }));
-  const sustainedFamilies = METRIC_FAMILIES.filter(
-    (family) =>
-      recentSessions.filter((session) =>
+  const metricEvidence = Object.fromEntries(
+    METRIC_FAMILIES.map((family) => {
+      const recentValues = recentSource.map((summary) =>
+        valueForFamily(summary.score.measures, family),
+      );
+      const shiftedRecentSessionCount = recentSessions.filter((session) =>
         session.shiftedFamilies.includes(family),
-      ).length >= 2,
+      ).length;
+      const repeatedChange =
+        recentSessions.length >= 3 && shiftedRecentSessionCount >= 2;
+      const recentMedian =
+        recentValues.length === 0 ? null : median(recentValues);
+      const evidence: MetricTrendEvidence = {
+        baselineMedian: baselines[family].median,
+        recentMedian,
+        changeFromBaseline:
+          recentMedian === null
+            ? null
+            : rounded(recentMedian - baselines[family].median),
+        shiftedRecentSessionCount,
+        status:
+          recentSessions.length < 3
+            ? "collecting"
+            : repeatedChange
+              ? "repeated-change"
+              : "within-usual-range",
+      };
+      return [family, evidence];
+    }),
+  ) as Record<MetricFamily, MetricTrendEvidence>;
+  const sustainedFamilies = METRIC_FAMILIES.filter(
+    (family) => metricEvidence[family].status === "repeated-change",
   );
   const status: TrendStatus =
     recentSessions.length < 3
@@ -176,7 +257,9 @@ export function evaluatePersonalTrend(
     sessionsNeeded: 0,
     baselineSessionIds: baselineSessions.map((summary) => summary.sessionId),
     recentSessions,
+    analysisWindow: analysisWindowFor(comparable),
     baselines,
+    metricEvidence,
     sustainedFamilies,
   };
 }

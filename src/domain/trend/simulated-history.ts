@@ -13,8 +13,10 @@ function summary(
   return {
     schemaVersion: 1,
     sessionId: `simulated-${mode}-${String(index + 1).padStart(2, "0")}`,
+    // Weekly spacing makes the demonstration an honest longitudinal example
+    // rather than eight sessions compressed into a few days.
     completedAt: new Date(
-      Date.UTC(2026, 6, 10 + index, 9, 0, 0),
+      Date.UTC(2026, 5, 4 + index * 7, 9, 0, 0),
     ).toISOString(),
     mode,
     chartId: `${mode}-mvp-chart`,
