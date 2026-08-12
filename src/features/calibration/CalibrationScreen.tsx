@@ -47,6 +47,10 @@ type CalibrationState =
     }
   | { readonly kind: "error"; readonly message: string };
 
+function incompleteCalibrationPercent(progress: number): number {
+  return Math.min(99, Math.floor(progress * 100));
+}
+
 export function CalibrationScreen({
   language,
   mode,
@@ -234,12 +238,12 @@ export function CalibrationScreen({
                 : "Preparing local model…"
               : state.kind === "framing"
                 ? isChinese
-                  ? `稳定追踪 ${Math.round(state.progress * 100)}%`
-                  : `Stable tracking ${Math.round(state.progress * 100)}%`
+                  ? `稳定追踪 ${incompleteCalibrationPercent(state.progress)}%`
+                  : `Stable tracking ${incompleteCalibrationPercent(state.progress)}%`
                 : state.kind === "ready"
                   ? isChinese
-                    ? "位置合适"
-                    : "Position ready"
+                    ? "校准完成 — 100%"
+                    : "Calibration complete — 100%"
                   : isChinese
                     ? "暂时无法读取"
                     : "Could not read input"}

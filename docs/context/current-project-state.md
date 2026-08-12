@@ -114,8 +114,11 @@ file after material verified changes.
 - Calibration status and recovery guidance occupy separate preview regions.
   Missing landmarks now prompt repositioning instead of being labelled as a
   lighting problem, and the MediaPipe provider confidence gate is aligned to
-  the domain gate at `0.45`. Real-camera accuracy under representative
-  lighting remains an open device-evidence gate.
+  the domain gate at `0.45`. Active calibration progress is capped at 99%;
+  true 100% now freezes the accepted standing average or seated completion
+  state and stops the detector frame loop before the player releases position.
+  Component tests cover both modes and the near-threshold boundary. Real-camera
+  accuracy under representative lighting remains an open device-evidence gate.
 - Seated camera frames now pass through a reusable transient in-memory canvas
   and fresh Hand Landmarker image inference. This avoids both the task's
   unpopulated per-landmark visibility field and the browser build's empty
