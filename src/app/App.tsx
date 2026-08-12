@@ -31,6 +31,11 @@ import { sessionsThisWeek } from "../domain/session/weekly-participation";
 import type { StandingCalibration } from "../domain/movement/standing-classifier";
 import type { SyntheticTrackingScenario } from "../domain/movement/synthetic-trace";
 import {
+  DEFAULT_SONG_ID,
+  playableSong,
+  type SongId,
+} from "../domain/music/song-catalog";
+import {
   createSupporterGrant,
   revokeSupporterGrant,
   type SupporterGrant,
@@ -48,6 +53,7 @@ import { ModeScreen } from "../features/onboarding/ModeScreen";
 import { PermissionScreen } from "../features/onboarding/PermissionScreen";
 import { SafetyScreen } from "../features/onboarding/SafetyScreen";
 import { WelcomeScreen } from "../features/onboarding/WelcomeScreen";
+import { SongLibraryScreen } from "../features/music/SongLibraryScreen";
 import { ProgressScreen } from "../features/progress/ProgressScreen";
 import { CompletingScreen } from "../features/results/CompletingScreen";
 import { ResultScreen } from "../features/results/ResultScreen";
@@ -55,7 +61,7 @@ import { SharingScreen } from "../features/sharing/SharingScreen";
 import { AppChrome } from "../ui/components/AppChrome";
 import type { LocalDataStatus } from "../ui/components/LocalDataNotice";
 
-type IdleView = "home" | "progress" | "sharing";
+type IdleView = "home" | "songs" | "progress" | "sharing";
 type ClockRecoveryPoint =
   | "TUTORIAL_COMPLETE"
   | "RETURNING_CALIBRATED"
@@ -109,6 +115,8 @@ export function App() {
     () => initialSessionState(createSessionId()),
   );
   const [idleView, setIdleView] = useState<IdleView>("home");
+  const [selectedSongId, setSelectedSongId] =
+    useState<SongId>(DEFAULT_SONG_ID);
   const [history, setHistory] = useState<readonly SessionSummary[]>([]);
   const [historyStatus, setHistoryStatus] =
     useState<LocalDataStatus>("loading");
@@ -180,6 +188,12 @@ export function App() {
     document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
   }, [language]);
 
+  useEffect(() => {
+    if (state.phase === "playing") {
+      window.scrollTo(0, 0);
+    }
+  }, [state.phase]);
+
   const chart = useMemo(
     () =>
       state.mode === null
@@ -189,6 +203,7 @@ export function App() {
           }),
     [fastSynthetic, state.mode, state.source],
   );
+  const selectedSong = playableSong(selectedSongId);
 
   const trendReport = useMemo(
     () =>
@@ -576,13 +591,18 @@ export function App() {
             storedSummaries={history}
           />
         );
-      } else {
+      } else if (idleView === "songs") {
         screen = (
-          <WelcomeScreen
-            historyCount={history.length}
+          <SongLibraryScreen
             language={language}
-            localDataStatus={visibleLocalDataStatus}
-            onBegin={() => {
+            onBack={() => {
+              setIdleView("home");
+            }}
+            onPlay={(songId) => {
+              if (playableSong(songId) === null) {
+                return;
+              }
+              setSelectedSongId(songId);
               dispatch(
                 returningPlayer
                   ? {
@@ -591,6 +611,19 @@ export function App() {
                     }
                   : { type: "BEGIN" },
               );
+            }}
+            onSelect={setSelectedSongId}
+            selectedSongId={selectedSongId}
+          />
+        );
+      } else {
+        screen = (
+          <WelcomeScreen
+            historyCount={history.length}
+            language={language}
+            localDataStatus={visibleLocalDataStatus}
+            onBegin={() => {
+              setIdleView("songs");
             }}
             onClearHistory={clearHistory}
             onRetryLocalData={retryVisibleLocalData}
@@ -709,7 +742,8 @@ export function App() {
         state.mode === null ||
         state.source === null ||
         chart === null ||
-        clock === null ? null : (
+        clock === null ||
+        selectedSong === null ? null : (
           <GameplayScreen
             calibration={calibration}
             camera={camera}
@@ -731,6 +765,7 @@ export function App() {
             onTrackingRecovered={markTrackingRecovered}
             playback={state.playback}
             reducedMotion={reducedMotion}
+            song={selectedSong}
             source={state.source}
             syntheticTrackingScenario={syntheticTrackingScenario}
           />

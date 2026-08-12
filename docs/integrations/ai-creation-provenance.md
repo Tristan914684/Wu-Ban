@@ -93,6 +93,20 @@ them.
 - Rejected approach: downloading a modern performance or relying on an
   unverified “royalty-free” recording.
 
+### Codex-assisted Mo Li Hua visual - 2026-08-13
+
+- Asset: `DB-MV-001`, used as the song-library cover and muted gameplay MV.
+- Tool: built-in image generation; no model version was exposed in the result.
+- Inputs: project-only prompt with no reference image, performer likeness,
+  commercial footage, logo, or private/player data.
+- Contribution: one original ink-and-gouache jasmine scene with a quiet centre
+  for cue contrast.
+- Human/local edits: `cwebp` poster conversion and FFmpeg slow pan/zoom into a
+  24-second silent H.264 loop.
+- Review: source, poster, and a mid-loop frame inspected; project-owner terms,
+  cultural, comfort, and device review remain open.
+- Evidence: [`mo-li-hua-mv-provenance.md`](mo-li-hua-mv-provenance.md).
+
 ## Hackathon evidence pack
 
 Use short, verifiable examples tied to the running product. The evidence pack is

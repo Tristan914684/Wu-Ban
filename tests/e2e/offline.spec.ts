@@ -26,6 +26,9 @@ test("the local spectator route starts after the network is removed", async ({
   ).toBeVisible();
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
   await page
+    .getByRole("button", { name: "播放《茉莉花》", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "我明白了，继续", exact: true })
     .click();
   await page

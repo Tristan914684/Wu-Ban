@@ -123,6 +123,7 @@ docs/
 │   └── tech-stack-policy.md
 ├── integrations/
 │   ├── ai-creation-provenance.md
+│   ├── mo-li-hua-mv-provenance.md
 │   └── wechat-caregiver-notifications.md
 ├── product/
 │   ├── decision-log.md
@@ -138,9 +139,11 @@ docs/
 ├── superpowers/
 │   ├── plans/
 │   │   ├── 2026-08-12-calibration-completion-freeze.md
-│   │   └── 2026-08-12-elderly-first-gameplay-feedback.md
+│   │   ├── 2026-08-12-elderly-first-gameplay-feedback.md
+│   │   └── 2026-08-13-song-library-simple-gameplay-mv.md
 │   └── specs/
-│       └── 2026-08-12-calibration-completion-freeze-design.md
+│       ├── 2026-08-12-calibration-completion-freeze-design.md
+│       └── 2026-08-12-simple-gameplay-song-library-mv-design.md
 ├── templates/
 │   ├── api-addition.md
 │   ├── architecture-rfc.md
@@ -290,8 +293,14 @@ docs/
   test-first implementation sequence for the approved calibration correction.
 - `superpowers/plans/2026-08-12-elderly-first-gameplay-feedback.md` records the
   test-first `Now / You / Next` gameplay redesign sequence.
+- `superpowers/plans/2026-08-13-song-library-simple-gameplay-mv.md` records the
+  test-first implementation sequence for the song library, local Mo Li Hua MV,
+  and simplified elderly-first gameplay HUD.
 - `superpowers/specs/2026-08-12-calibration-completion-freeze-design.md`
   records the approved standing and seated calibration-completion contract.
+- `superpowers/specs/2026-08-12-simple-gameplay-song-library-mv-design.md`
+  records the approved elderly-first song library, minimal gameplay HUD, and
+  locally authored Mo Li Hua MV contract.
 - `templates/*` are fill-in contracts for features, bugs, refactors, migrations,
   APIs, UI, performance, incidents, RFCs, postmortems, and retrospectives. Use
   the smallest template that covers the work.

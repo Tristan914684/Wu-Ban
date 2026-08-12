@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 12 August 2026
+**Last verified:** 13 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,8 +21,8 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: all 135 unit/component tests and all 7 IndexedDB
-  integration/migration tests pass in the current worktree. All 27 production
+- Automated application tests: all 143 unit/component tests and all 7 IndexedDB
+  integration/migration tests pass in the current worktree. All 28 production
   Chrome journeys pass, including active/paused axe scans, seated state,
   reduced-dynamics timing, keyboard pause/resume/stop, and classifier-backed
   tracking recovery.
@@ -35,7 +35,7 @@ file after material verified changes.
 - Miora: official web studio identified, but the available Chrome session is
   signed out, so final asset generation remains blocked on owner sign-in.
 - CodeBuddy: owner-account submission evidence remains unverified.
-- Documentation operating system: active; 98 Markdown files and two repository
+- Documentation operating system: active; 101 Markdown files and two repository
   entrypoints validate locally with `node scripts/validate-docs.mjs`.
 
 ## Binding MVP direction
@@ -55,6 +55,11 @@ file after material verified changes.
   implemented from a public-domain score reference with no bundled recording,
   sample, or soundfont. Project-owner listening and demo-laptop output review
   remain open.
+- Song/MV experience: a scalable four-entry library is implemented with only
+  `茉莉花` playable. Its locally bundled project-authored muted motion visual
+  fills scored play and remains active under reduced dynamics. Three future
+  songs are disabled and explicitly pending rights review. Owner visual,
+  comfort, service-terms, and target-device approval remain open.
 - Caregiver: include a real, consented non-diagnostic check-in path for owner
   testing, with a WeChat implementation guide. It is not a medical alert.
 - Claims: movement-and-attention trends only; no diagnosis, screening, risk
@@ -68,9 +73,11 @@ file after material verified changes.
    demo laptop.
 2. Complete project-owner listening and the four-minute real-output audio run
    for the implemented rights-traced procedural `茉莉花` arrangement.
-3. Complete real-camera, manual screen-reader, manual forced-colour, and
+3. Complete project-owner visual, cultural, motion-comfort, service-terms, and
+   target-device review for the local `DB-MV-001` Mo Li Hua motion visual.
+4. Complete real-camera, manual screen-reader, manual forced-colour, and
    target-device non-happy checks for M2 and M3.
-4. Select and configure the owner-controlled WeChat test channel before
+5. Select and configure the owner-controlled WeChat test channel before
    implementing any external send adapter.
 
 ## M1 evidence
@@ -149,17 +156,19 @@ file after material verified changes.
   active at common laptop widths, while the scored playfield is bounded to the
   remaining dynamic viewport height and keeps its cue target at the true screen
   centre beneath a contained HUD without page-level vertical scrolling.
-- Scored play now presents four stable, mode-specific movement lanes with a
-  fixed action line and four to five ordered upcoming cues. Cue position is
-  derived from the existing audio-clock chart; scoring and narration contracts
-  are unchanged, and every marker retains text, symbol, shape, and lane cues.
-- Scored play now uses the accepted elderly-first `Now / You / Next`
-  composition. A warm-paper `You` rail separates `In frame` from the calibrated
-  standing start or seated hand-ready state; the centre runway exposes
-  `Later / Next / Ready / Move now`; and a peripheral rail reduces progress to
-  four named phases. The route-level `08 / 11` counter and collapsible guide no
-  longer compete during play. Live-state labels are browser-guarded at 24 px or
-  larger, Pause/Resume at 56 px or larger, and 1280 x 720 plus 1024 x 720 fit
+- Scored play now presents four stable movement lanes, a fixed action line,
+  and four to five upcoming cue symbols over the local muted Mo Li Hua motion
+  visual. Cue position remains derived from the existing audio-clock chart;
+  the video cannot alter scoring, pauses/resumes with the session, and falls
+  back to the local poster without invalidating play.
+- PD-020 simplifies ordinary scored play to the information an older player
+  needs at distance: one compact centre/direction or seated-hand location,
+  one current action, large upcoming icons, Pause/Stop, four phase dots, exact
+  time, and short feedback. Written timing stages, cue numbers, lane labels,
+  full phase names, mode/input details, framing helpers, and the always-visible
+  gentler control are removed. Gameplay text is browser-guarded at 28 px or
+  larger, the current cue at 56 px or larger, cue icons at 112 px or larger,
+  and gameplay controls at 64 px or larger. Both 1280 x 720 and 1024 x 720 fit
   without page scrolling.
 - Pausing freezes the audio-clock-derived runway and opens a large comfort
   surface with Resume, fixed-caption narration, and music/cue volume controls.
@@ -171,8 +180,8 @@ file after material verified changes.
   correct step remains countable after the player promptly returns to centre
   instead of requiring them to hold the pose until cue evaluation. Centre
   return re-arms the next event and a held pose cannot score twice. A persistent
-  camera-state panel shows centred, left, right, forward, back, seated gesture,
-  and unclear states using plain language plus a five-position compass.
+  compact player-location widget shows centred, left, right, forward, back,
+  seated gesture, and unclear states using one large symbol and short label.
 - The seven primary setup surfaces now respond to both viewport width and
   height. At the 1280 x 720 target, home, disclosure, permission, mode, safety,
   calibration, and movement practice require no page-level vertical scrolling;
@@ -223,6 +232,10 @@ file after material verified changes.
 - Production E2E starts its own build on dedicated port 4174 with preview reuse
   disabled, preventing a long-running development or preview server from
   satisfying browser tests for a different source state.
+- The local Mo Li Hua poster and silent MP4 are included in the deterministic
+  production precache and required-offline bundle list. Production screenshots
+  at 1280 x 720 and 1024 x 720 confirm the active large-icon stage, and a
+  separate 1280 x 720 capture confirms the paused comfort surface.
 - The development-only `?debug=1` real-camera result report combines aggregate
   expected-versus-detected counts with active-session render/inference rates,
   inference duration median/p95, unclear-frame reasons/episodes, pauses, and

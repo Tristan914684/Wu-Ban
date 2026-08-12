@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest";
 
 import { cleanup, render, screen } from "@testing-library/react";
 import { createRef } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { livePlayerState } from "./live-player-state";
 import { GameplayPlayerStatePanel } from "./GameplayPlayerStatePanel";
@@ -17,31 +17,25 @@ const baseProps = {
   source: "synthetic" as const,
   playerState: livePlayerState("en", "standing", { kind: "neutral" }),
   trackingIssue: null,
-  cueSupport: 1 as const,
   videoRef: createRef<HTMLVideoElement>(),
-  onMakeGentler: vi.fn(),
 };
 
 describe("GameplayPlayerStatePanel", () => {
-  it("separates framing from the standing start position", () => {
+  it("shows one large standing location without framing explanations", () => {
     render(<GameplayPlayerStatePanel {...baseProps} />);
 
     expect(
-      screen.getByRole("complementary", {
-        name: "Your position and tracking",
-      }),
+      screen.getByRole("complementary", { name: "Your position" }),
     ).toBeVisible();
-    expect(screen.getByText("In frame")).toBeVisible();
+    expect(screen.getByText("YOU")).toBeVisible();
+    expect(screen.getByText("●")).toBeVisible();
     expect(screen.getByText("At start position")).toBeVisible();
-    expect(
-      screen.getByRole("group", { name: "Your movement position" }),
-    ).toBeVisible();
-    expect(screen.getAllByTestId("compass-position")).toHaveLength(5);
-    expect(screen.getByText("Practice figure")).toBeVisible();
-    expect(screen.queryByRole("video")).not.toBeInTheDocument();
+    expect(screen.queryByText("In frame")).not.toBeInTheDocument();
+    expect(screen.queryByText("Practice figure")).not.toBeInTheDocument();
+    expect(screen.queryByText("CUE SUPPORT")).not.toBeInTheDocument();
   });
 
-  it("gives a concrete reset instruction after a standing step", () => {
+  it("uses the current direction as the dominant standing symbol", () => {
     render(
       <GameplayPlayerStatePanel
         {...baseProps}
@@ -53,13 +47,14 @@ describe("GameplayPlayerStatePanel", () => {
       />,
     );
 
+    expect(screen.getByText("→")).toBeVisible();
     expect(screen.getByText("Moving right")).toBeVisible();
     expect(
-      screen.getByText("Step seen; return both feet to the start marks"),
-    ).toBeVisible();
+      screen.queryByText("Step seen; return both feet to the start marks"),
+    ).not.toBeInTheDocument();
   });
 
-  it("uses hand-specific framing and home language in seated mode", () => {
+  it("keeps hand-specific seated guidance equally compact", () => {
     render(
       <GameplayPlayerStatePanel
         {...baseProps}
@@ -68,14 +63,11 @@ describe("GameplayPlayerStatePanel", () => {
       />,
     );
 
-    expect(screen.getByText("Hands visible")).toBeVisible();
     expect(screen.getByText("Hands ready")).toBeVisible();
-    expect(
-      screen.queryByRole("group", { name: "Your movement position" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText("●")).toBeVisible();
   });
 
-  it("marks tracking uncertainty as unscored and non-blaming", () => {
+  it("marks tracking uncertainty as not scored with one short action", () => {
     render(
       <GameplayPlayerStatePanel
         {...baseProps}
@@ -87,14 +79,11 @@ describe("GameplayPlayerStatePanel", () => {
       />,
     );
 
-    expect(screen.getByText("More than one person")).toBeVisible();
     expect(screen.getByText("Not scored")).toBeVisible();
-    expect(
-      screen.getByText("Keep one player inside the start outline"),
-    ).toBeVisible();
+    expect(screen.getByText("One player only")).toBeVisible();
   });
 
-  it("renders the full current camera view only for camera input", () => {
+  it("retains a hidden live video only as the camera inference input", () => {
     const videoRef = createRef<HTMLVideoElement>();
     render(
       <GameplayPlayerStatePanel
@@ -104,9 +93,9 @@ describe("GameplayPlayerStatePanel", () => {
       />,
     );
 
-    const preview = screen.getByLabelText("Current camera view");
-    expect(preview.tagName).toBe("VIDEO");
-    expect(videoRef.current).toBe(preview);
-    expect(screen.queryByText("Practice figure")).not.toBeInTheDocument();
+    const input = screen.getByLabelText("Camera input for movement tracking");
+    expect(input.tagName).toBe("VIDEO");
+    expect(input).toHaveClass("player-state-panel__camera-input");
+    expect(videoRef.current).toBe(input);
   });
 });

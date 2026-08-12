@@ -48,6 +48,8 @@ const applicationJavascriptBytes = totalFor(
 const cssBytes = totalFor((path) => path.endsWith(".css"));
 const clientBytes = totalFor(() => true);
 const requiredOfflineAssets = [
+  "media/mo-li-hua-mv.mp4",
+  "media/mo-li-hua-poster.webp",
   "models/hand_landmarker.task",
   "models/pose_landmarker_lite.task",
   "vendor/mediapipe/vision_wasm_internal.wasm",

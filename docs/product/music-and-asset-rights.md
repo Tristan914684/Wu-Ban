@@ -60,6 +60,31 @@ recording, sample, soundfont, or performance is bundled.
 - Review: source, duration, and scheduling code reviewed; project-owner
   listening/comfort review on the demo laptop remains required.
 
+## Implemented Mo Li Hua visual record
+
+**Asset ID:** `DB-MV-001`
+
+**In-product paths:** `public/media/mo-li-hua-poster.webp` and
+`public/media/mo-li-hua-mv.mp4`
+
+**Type:** Project-directed AI-assisted original image plus a local silent
+FFmpeg motion edit; no downloaded footage, commercial recording, performer
+likeness, logo, lyrics, or external reference image is bundled.
+
+- Visual: white jasmine around a quiet hand-painted golden-dusk community
+  square, with a dark central cue area.
+- Video: 1280 x 720 H.264, 25 FPS, 24 seconds, no audio stream.
+- Timing boundary: decorative only; it does not drive the cue chart or scoring.
+- Attribution: “Mo Li Hua visual — project-directed AI-assisted ink and
+  gouache artwork; local motion edit by the DanceBros team.”
+- Poster SHA-256:
+  `b4a9479909664417d3cfafa20d69e7aaf3def034d3b365cd9d7ed7dd9c082321`.
+- Video SHA-256:
+  `e5a75fb73710d42f4c6136baa889464564eebde7c3bc03385c388712e618c003`.
+- Evidence: [`mo-li-hua-mv-provenance.md`](../integrations/mo-li-hua-mv-provenance.md).
+- Release gate: project-owner image-service terms, visual/cultural,
+  motion-comfort, and target-device review remain required before public use.
+
 ## Asset record
 
 For every music, image, animation, font, icon, model, or sound:

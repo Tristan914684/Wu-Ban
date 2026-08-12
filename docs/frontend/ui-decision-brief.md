@@ -19,29 +19,27 @@ motion; do not drift into a generic dashboard or childish fitness game.
   lantern targets, and calm public-square geometry.
 - Density: sparse during player flow; balanced on results and supporter views.
 - Hierarchy: the current instruction or cue is primary during setup. During
-  scored play, a warm-paper `You` rail, dominant `Now / Next` runway, and quiet
-  four-phase session rail remain visible together. The current cue is largest;
-  the next four to five authored cues approach a fixed action line. During camera rehearsal,
-  the camera is the central proof surface; the
-  current cue, move progress, centre/home guidance, and quality status sit in
-  compact overlays rather than displacing it. During scored play, the playfield
-  spans the available centre column without displacing the player-state rail.
-  A persistent camera-state panel beside the runway separates framing from the
-  calibrated home position and makes left,
-  right, forward, back, gesture, and unclear states explicit in text and a
-  position compass.
-- Component grammar: stable playfield, four ruled movement lanes, ordered cue
-  markers, imperfect ruled sections, status bands, definition lists, a compact
-  Display and comfort disclosure, and one primary action. No interchangeable
-  metric-card grid.
+  scored play, a compact warm-paper player-location widget, one dominant
+  current cue, four to five large cue icons, four phase dots, and a short clock
+  remain visible over the muted Mo Li Hua visual. Written timing stages, cue
+  numbers, lane names, mode/input details, and helper paragraphs are absent
+  from ordinary play. During camera rehearsal, the camera is the central proof
+  surface; the current cue, move progress, centre/home guidance, and quality
+  status sit in compact overlays rather than displacing it. Scored play uses
+  the full stage; the calibrated centre, left, right, forward, back, seated
+  gesture, or unclear state appears as one large symbol plus one short label.
+- Component grammar: one large selected-song cover, honest unavailable-song
+  tiles, full-stage motion visual, perspective cue lines, oversized cue tokens,
+  four progress dots, opaque status chips, a compact Display and comfort
+  disclosure, and one primary action. No interchangeable metric-card grid.
 
 ## Type, colour, and material
 
 - Display: self-hosted Noto Serif SC variable.
 - Body: self-hosted Noto Sans SC variable.
-- Distance-reading floor: immediate player-state labels are at least 24 CSS px;
-  Pause/Resume are at least 56 CSS px, and supporting gameplay copy is enlarged
-  before decorative content is retained.
+- Distance-reading floor: gameplay text is at least 28 CSS px, the current cue
+  is at least 56 CSS px, cue icons are at least 112 CSS px, and gameplay
+  controls are at least 64 CSS px at the laptop targets.
 - Fallbacks: platform Chinese serif/sans families remain available if font
   loading fails.
 - Canvas: warm paper `#f1ece2`; ink `#1a1614`; secondary ink `#4a4339`;
@@ -63,8 +61,9 @@ motion; do not drift into a generic dashboard or childish fitness game.
 - Why this fits: the game needs timing and recovery motion, while repeated
   screens need stability and low main-thread cost.
 - Reduced motion: remove ambient movement and sweeping transitions; replace
-  continuous cue travel with stable `Later / Next / Ready / Move now` steps
-  while preserving the audio-clock cue time, target, text, shape, and sound.
+  continuous cue travel with stable timing steps while preserving the
+  audio-clock cue time, target, shape, and sound. The project-authored muted MV
+  explicitly keeps playing normally under this preference.
 - Preference placement: language and reduced dynamics live in the header's
   compact Display and comfort disclosure; language is an explicit two-choice
   control and reduced dynamics is a persistent on/off switch.
@@ -83,8 +82,8 @@ motion; do not drift into a generic dashboard or childish fitness game.
 - Scored standing play treats a fresh ankle-first step as a bounded movement
   event, keeps it available through the brief centre return, and consumes it
   for at most one cue. The same centre return re-arms the next event. The
-  visible camera-state compass updates only when the semantic position changes
-  and uses short CSS state transitions rather than decorative motion.
+  visible player-location symbol updates only when the semantic position
+  changes and uses short CSS state transitions rather than decorative motion.
 - Rejected: scroll hijacking, smooth scrolling, parallax, custom cursor,
   animated background particles during play, and floating cards.
 
@@ -102,9 +101,9 @@ motion; do not drift into a generic dashboard or childish fitness game.
   from the 1280 x 720 target down to the supported 800 x 720 compact laptop
   width; its action/reset rail stays beside it, and secondary detail collapses
   before the proof surface is displaced or clipped.
-- Scored play uses three columns at 1280 x 720 and a separately composed
-  two-column-plus-phase-row layout at 1024 x 720. Both keep the visible player
-  state, action line, Pause, Stop, and phase progress without page scrolling.
+- Scored play uses one full-width stage at 1280 x 720 and 1024 x 720. Both keep
+  the visible player state, action line, Pause, Stop, and phase progress without
+  page scrolling.
 - Compact reading: player setup stacks vertically; gameplay is unavailable on
   phone-sized viewports and offers a spectator explanation.
 - Wide/TV: preserve the 16:9 playfield and increase type/targets within safe
@@ -116,13 +115,13 @@ motion; do not drift into a generic dashboard or childish fitness game.
 
 ## Asset plan
 
-- Needed: movement-lane cue shapes, community-square key art, movement guide
-  poses, paper/ink texture, model/music notices, and real product screenshots
-  for the submission.
-- Source: CSS for functional cue geometry and paper/ink texture; Miora for
-  final environment and guide art after provenance capture; self-hosted
-  licensed fonts and models.
-- Licence risk: Miora terms snapshot and every final checksum remain required.
+- Needed: movement-lane cue shapes, movement guide poses, model/music notices,
+  and real product screenshots for the submission.
+- Source: CSS for functional cue geometry; project-directed built-in image
+  generation plus local FFmpeg motion for `DB-MV-001`; self-hosted licensed
+  fonts and models.
+- Licence risk: owner confirmation of the image-service output terms and final
+  visual, comfort, cultural, and target-device review remain required.
 - Bans: stock seniors, generic AI blobs, unlicensed Chinese motifs, placeholder
   imagery, and assets that obscure instructions.
 - Tasteful risk: the playfield is framed like an asymmetric, hand-painted

@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 
 import { BrowserCueNarrator } from "../../adapters/audio/browser-cue-narrator";
@@ -26,6 +27,7 @@ import type {
   MovementCue,
   MovementObservation,
 } from "../../domain/movement/landmarks";
+import type { SongDefinition } from "../../domain/music/song-catalog";
 import {
   frameConfidence,
   MOVEMENT_CLASSIFIER_VERSION,
@@ -59,6 +61,7 @@ import {
 } from "../../domain/gameplay/captured-movement";
 import { Button } from "../../ui/primitives/Button";
 import { cueRunwayView } from "./gameplay-cue-view";
+import { GameplayMusicVideo } from "./GameplayMusicVideo";
 import { GameplayPhaseRail } from "./GameplayPhaseRail";
 import { GameplayPlayerStatePanel } from "./GameplayPlayerStatePanel";
 import { livePlayerState } from "./live-player-state";
@@ -73,6 +76,7 @@ interface GameplayScreenProps {
   readonly mode: SessionMode;
   readonly source: InputSource;
   readonly chart: SessionChart;
+  readonly song: SongDefinition;
   readonly camera: BrowserCamera;
   readonly detector: MediaPipeLandmarkDetector;
   readonly calibration: StandingCalibration | null;
@@ -113,21 +117,6 @@ const CUE_SYMBOLS: Record<MovementCue, string> = {
   "index-hold": "指",
   "right-palm": "右",
 };
-
-const LANE_LABELS = {
-  standing: [
-    ["向左", "LEFT"],
-    ["向前", "FORWARD"],
-    ["退回", "BACK"],
-    ["向右", "RIGHT"],
-  ],
-  seated: [
-    ["左掌", "LEFT PALM"],
-    ["双掌", "BOTH"],
-    ["食指", "INDEX"],
-    ["右掌", "RIGHT PALM"],
-  ],
-} as const;
 
 const RUNWAY_LANE_TOP = [39.5, 46.5, 53.5, 60.5] as const;
 const RUNWAY_LANE_BOTTOM = [14, 38, 62, 86] as const;
@@ -173,7 +162,7 @@ function cueRunwayStyle(
     left: `${left}%`,
     top: `${8 + progress * 72}%`,
     opacity: 0.52 + progress * 0.48,
-    transform: `translate(-50%, -50%) scale(${0.58 + progress * 0.42})`,
+    transform: `translate(-50%, -50%) scale(${0.84 + progress * 0.16})`,
   };
 }
 
@@ -197,6 +186,7 @@ export function GameplayScreen({
   mode,
   source,
   chart,
+  song,
   camera,
   detector,
   calibration,
@@ -225,6 +215,8 @@ export function GameplayScreen({
   const lastInferenceAtRef = useRef<number | null>(null);
   const syntheticTrackingFaultRef = useRef(false);
   const playbackRef = useRef(playback);
+  const pauseDialogRef = useRef<HTMLDivElement>(null);
+  const restorePauseFocusRef = useRef(false);
   const performanceStartRef = useRef(0);
   const renderSampleRef = useRef({ atMs: 0, frames: 0 });
   const inferenceSampleRef = useRef({
@@ -255,7 +247,7 @@ export function GameplayScreen({
     useState<MovementObservation>({ kind: "neutral" });
   const [provisionalValid, setProvisionalValid] = useState(false);
   const [feedback, setFeedback] = useState(
-    language === "zh" ? "跟着灯笼来" : "Follow the lantern",
+    language === "zh" ? "准备" : "Ready",
   );
   const [clockError, setClockError] = useState(false);
   const isChinese = language === "zh";
@@ -292,6 +284,21 @@ export function GameplayScreen({
 
   useEffect(() => {
     playbackRef.current = playback;
+  }, [playback]);
+
+  useEffect(() => {
+    if (playback === "paused") {
+      pauseDialogRef.current
+        ?.querySelector<HTMLButtonElement>(".pause-overlay__resume")
+        ?.focus({ preventScroll: true });
+      return;
+    }
+    if (playback === "running" && restorePauseFocusRef.current) {
+      restorePauseFocusRef.current = false;
+      document
+        .querySelector<HTMLButtonElement>(".gameplay-pause")
+        ?.focus({ preventScroll: true });
+    }
   }, [playback]);
 
   useEffect(() => {
@@ -584,11 +591,11 @@ export function GameplayScreen({
               setFeedback(
                 !attempt.scoreable
                   ? isChinese
-                    ? "热身画面暂时不清楚，不计分"
-                    : "Warm-up tracking is unclear — not scored"
+                    ? "不计分"
+                    : "Not scored"
                   : isChinese
-                    ? "画面清楚，继续热身"
-                    : "Tracking looks clear — keep warming up",
+                    ? "准备"
+                    : "Ready",
               );
               return;
             }
@@ -631,19 +638,19 @@ export function GameplayScreen({
             setFeedback(
               outcome === "unscoreable"
                 ? isChinese
-                  ? "暂时看不清，这一下不计分"
-                  : "Tracking unclear — this cue will not score"
+                  ? "不计分"
+                  : "Not scored"
                 : outcome === "good"
                   ? isChinese
                     ? "很好"
                     : "Good"
                   : outcome === "nearly"
                     ? isChinese
-                      ? "差一点，很接近"
-                      : "Nearly — very close"
+                      ? "差一点"
+                      : "Nearly"
                     : isChinese
-                      ? "没关系，看下一个"
-                      : "Try the next one",
+                      ? "下一个"
+                      : "Next",
             );
           }
         });
@@ -688,6 +695,7 @@ export function GameplayScreen({
   const togglePause = async () => {
     try {
       if (playback === "paused") {
+        restorePauseFocusRef.current = true;
         await clock.resume();
         onResume();
         return;
@@ -699,10 +707,32 @@ export function GameplayScreen({
     }
   };
 
+  const trapPauseDialogFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Tab") {
+      return;
+    }
+    const focusable = Array.from(
+      pauseDialogRef.current?.querySelectorAll<HTMLElement>(
+        "button:not(:disabled), input:not(:disabled)",
+      ) ?? [],
+    );
+    const first = focusable[0];
+    const last = focusable.at(-1);
+    if (first === undefined || last === undefined) {
+      return;
+    }
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
+
   const progress = Math.min(1, elapsedMs / chart.durationMs);
   const currentSection =
     visibleCue?.section ?? runwayCues[0]?.section ?? "warmup";
-  const laneLabels = LANE_LABELS[mode];
   const playerState = livePlayerState(language, mode, liveObservation);
   const remainingSeconds = Math.ceil(
     Math.max(0, chart.durationMs - elapsedMs) / 1_000,
@@ -712,71 +742,61 @@ export function GameplayScreen({
       className="gameplay-screen"
       data-playback={playback}
     >
-      <GameplayPlayerStatePanel
-        cueSupport={cueSupport}
-        language={language}
-        mode={mode}
-        onMakeGentler={() => {
-          setCueSupport((current) => makeCueSupportGentler(current));
-        }}
-        playerState={playerState}
-        source={source}
-        trackingIssue={trackingIssue}
-        videoRef={videoRef}
-      />
       <section
         className="gameplay-stage"
         aria-label={isChinese ? "舞步游戏区" : "Dance playfield"}
         data-gameplay-stage
       >
-        <div className="gameplay-stage__paper" aria-hidden="true" />
+        {song.mv === undefined ? null : (
+          <GameplayMusicVideo
+            elapsedMs={elapsedMs}
+            playback={playback}
+            poster={song.mv.poster}
+            reducedMotion={reducedMotion}
+            src={song.mv.src}
+          />
+        )}
         <div className="gameplay-stage__shade" aria-hidden="true" />
+        <GameplayPlayerStatePanel
+          language={language}
+          mode={mode}
+          playerState={playerState}
+          source={source}
+          trackingIssue={trackingIssue}
+          videoRef={videoRef}
+        />
         <header className="gameplay-now">
-          <div>
-            <span>{isChinese ? "现在" : "NOW"}</span>
+          <div className="gameplay-current-cue">
+            <span aria-hidden="true" className="gameplay-current-cue__symbol">
+              {visibleCue === undefined
+                ? "◆"
+                : visibleCue.expected === null
+                  ? "●"
+                  : CUE_SYMBOLS[visibleCue.expected]}
+            </span>
             <h1>
               {visibleCue === undefined
                 ? isChinese
-                  ? "看跑道，准备下一个"
-                  : "Watch the runway"
+                  ? "准备"
+                  : "Ready"
                 : cueLabel(language, visibleCue.expected)}
             </h1>
           </div>
-          {playback === "paused" ? null : (
-            <Button onClick={() => void togglePause()} variant="secondary">
+          {playback === "running" ? (
+            <Button
+              className="gameplay-pause"
+              onClick={() => void togglePause()}
+              variant="secondary"
+            >
               {isChinese ? "暂停" : "Pause"}
             </Button>
-          )}
+          ) : null}
         </header>
         <section
           aria-label={isChinese ? "接下来的动作" : "Upcoming moves"}
           className="move-runway"
           data-move-runway
         >
-          <div className="move-runway__heading" aria-hidden="true">
-            <span>{isChinese ? "接下来" : "UP NEXT"}</span>
-            <strong>
-              {isChinese ? "看动作靠近现在做线" : "Watch each move approach the action line"}
-            </strong>
-          </div>
-          <div
-            aria-label={isChinese ? "动作时间提示" : "Cue timing"}
-            className="move-runway__timing-scale"
-            role="list"
-          >
-            <span data-timing-label="later" role="listitem">
-              {isChinese ? "稍后" : "Later"}
-            </span>
-            <span data-timing-label="next" role="listitem">
-              {isChinese ? "下一个" : "Next"}
-            </span>
-            <span data-timing-label="ready" role="listitem">
-              {isChinese ? "准备" : "Ready"}
-            </span>
-            <span data-timing-label="now" role="listitem">
-              {isChinese ? "现在做" : "Move now"}
-            </span>
-          </div>
           <div className="move-runway__track" aria-hidden="true">
             <svg
               className="move-runway__lines"
@@ -789,9 +809,7 @@ export function GameplayScreen({
               <path d="M570 0 L740 700" />
               <path d="M640 0 L980 700" />
             </svg>
-            <div className="move-runway__hit-line">
-              <span>{isChinese ? "现在做" : "MOVE NOW"}</span>
-            </div>
+            <div className="move-runway__hit-line" />
             {judgment !== null && elapsedMs - judgment.atMs < 900 ? (
               <p
                 className="judgment-banner"
@@ -815,7 +833,7 @@ export function GameplayScreen({
                         : "Not scored"}
               </p>
             ) : null}
-            {runwayCues.map((cue, index) => {
+            {runwayCues.map((cue) => {
               const lane =
                 cue.expected === null ? "hold" : CUE_LANES[cue.expected];
               const cueView = cueRunwayView(
@@ -839,9 +857,6 @@ export function GameplayScreen({
                     reducedMotion,
                   )}
                 >
-                  <span className="move-note__order">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
                   <span className="move-note__symbol">
                     {cue.expected === null ? (
                       <span aria-hidden="true" className="move-note__lantern" />
@@ -849,15 +864,9 @@ export function GameplayScreen({
                       CUE_SYMBOLS[cue.expected]
                     )}
                   </span>
-                  <strong>{cueLabel(language, cue.expected)}</strong>
                 </div>
               );
             })}
-            <div className="move-runway__lane-labels">
-              {laneLabels.map((label) => (
-                <span key={label[1]}>{label[isChinese ? 0 : 1]}</span>
-              ))}
-            </div>
           </div>
           <ol className="visually-hidden">
             {runwayCues.map((cue, index) => (
@@ -871,42 +880,69 @@ export function GameplayScreen({
         <div className="gameplay-feedback" aria-live="polite">
           {feedback}
         </div>
+        <GameplayPhaseRail
+          currentSection={currentSection}
+          language={language}
+          progress={progress}
+          remainingSeconds={remainingSeconds}
+        />
         {playback === "tracking-lost" ? (
           <div className="tracking-overlay" role="status">
             <b>{isChinese ? "不计分" : "Not scored"}</b>
             <strong>
-              {isChinese ? "暂时看不清动作" : "Tracking is unclear"}
-            </strong>
-            <span>
               {isChinese
                 ? trackingIssue === "multiple-people"
-                  ? "请让主要玩家留在轮廓内，朋友站到边界外；这段不计分。"
-                  : "回到轮廓里、增加正面光线；这段不会算错。"
+                  ? "只留一位玩家"
+                  : "回到中间"
                 : trackingIssue === "multiple-people"
-                  ? "Keep the primary player inside and friends outside the boundary. This segment is not scored."
-                  : "Return to the outline and add front light. This part will not count as a miss."}
-            </span>
+                  ? "One player only"
+                  : "Return to centre"}
+            </strong>
+            <Button
+              className="gameplay-pause"
+              onClick={() => void togglePause()}
+              variant="secondary"
+            >
+              {isChinese ? "暂停" : "Pause"}
+            </Button>
           </div>
         ) : null}
         {playback === "paused" ? (
           <div
             aria-label={isChinese ? "暂停与舒适度设置" : "Pause and comfort settings"}
+            aria-modal="true"
             className="pause-overlay"
+            onKeyDown={trapPauseDialogFocus}
+            ref={pauseDialogRef}
             role="dialog"
           >
             <div className="pause-overlay__heading">
               <span>{isChinese ? "休息一下" : "TAKE A BREATH"}</span>
               <strong>{isChinese ? "已暂停" : "Paused"}</strong>
-              <p>
-              {isChinese
-                  ? "动作和计时都停住了。准备好后再继续。"
-                  : "The moves and timer are stopped. Continue when you are ready."}
-              </p>
             </div>
-            <Button onClick={() => void togglePause()} variant="primary">
+            <Button
+              className="pause-overlay__resume"
+              onClick={() => void togglePause()}
+              variant="primary"
+            >
               {isChinese ? "继续游戏" : "Resume game"}
             </Button>
             <div className="pause-overlay__comfort">
+              <Button
+                disabled={cueSupport === 2}
+                onClick={() => {
+                  setCueSupport((current) => makeCueSupportGentler(current));
+                }}
+                variant="quiet"
+              >
+                {cueSupport === 2
+                  ? isChinese
+                    ? "已是最温和"
+                    : "Gentlest cues on"
+                  : isChinese
+                    ? "提示更温和"
+                    : "Gentler cues"}
+              </Button>
               <label className="voice-guidance-toggle">
                 <input
                   checked={voiceGuidance}
@@ -952,44 +988,6 @@ export function GameplayScreen({
             </div>
           </div>
         ) : null}
-      </section>
-      <aside
-        aria-label={isChinese ? "本局状态" : "Session status"}
-        className="gameplay-hud"
-        data-gameplay-hud
-      >
-        <GameplayPhaseRail
-          currentSection={currentSection}
-          language={language}
-          progress={progress}
-          remainingSeconds={remainingSeconds}
-        />
-        <dl className="gameplay-hud__context">
-          <div>
-            <dt>{isChinese ? "模式" : "MODE"}</dt>
-            <dd>
-              {mode === "standing"
-                ? isChinese
-                  ? "站立舞步"
-                  : "STANDING"
-                : isChinese
-                  ? "坐姿手势"
-                  : "SEATED"}
-            </dd>
-          </div>
-          <div>
-            <dt>{isChinese ? "输入" : "INPUT"}</dt>
-            <dd>
-              {source === "synthetic"
-                ? isChinese
-                  ? "模拟演示"
-                  : "SIMULATED"
-                : isChinese
-                  ? "本机摄像头"
-                  : "ON-DEVICE CAMERA"}
-            </dd>
-          </div>
-        </dl>
         {debugEnabled ? (
           <dl className="debug-panel" data-testid="local-debug-panel">
             <div>
@@ -1039,7 +1037,7 @@ export function GameplayScreen({
               : "The audio clock did not start. This session will not enter a personal trend."}
           </div>
         ) : null}
-      </aside>
+      </section>
     </main>
   );
 }

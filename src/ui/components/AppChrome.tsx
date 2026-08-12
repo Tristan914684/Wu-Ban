@@ -192,8 +192,8 @@ export function AppChrome({
                   </strong>
                   <small>
                     {language === "zh"
-                      ? "减少装饰动画，并缩短画面切换。"
-                      : "Limit decorative movement and shorten transitions."}
+                      ? "只让动作提示更平稳；音乐画面继续播放。"
+                      : "Steady the move cues. The music video keeps playing."}
                   </small>
                 </span>
                 <input

@@ -7,6 +7,23 @@ system.
 **Agent obligation:** Add an entry for changed authority, workflow, architecture
 governance, or product interpretation; omit typo-only edits.
 
+## 2026-08-13
+
+- Accepted PD-020 and implemented a visible multi-song library with one honest
+  playable choice, three unavailable rights-pending candidates, and no camera
+  or audio side effect before `Play Mo Li Hua`.
+- Replaced the explanatory scored-play rails with a full-stage, elderly-first
+  composition: compact player location, one 56 px-or-larger current action,
+  112 px-or-larger cue icons, four progress dots, short time, and 64 px-or-
+  larger Pause/Resume/Stop controls.
+- Added the local muted project-authored `DB-MV-001` Mo Li Hua motion visual,
+  poster fallback, playback lifecycle tests, exact provenance/checksums, and
+  the explicit rule that reduced dynamics never freezes or replaces the MV.
+- Added production-browser containment, axe, standing/seated, tracking-loss,
+  pause/resume, 200% library, and screenshot evidence while retaining owner
+  asset approval, older-adult comprehension, real-camera/device, and manual
+  assistive-technology checks as open release gates.
+
 ## 2026-08-12
 
 - Accepted PD-019 and implemented the elderly-first `Now / You / Next`

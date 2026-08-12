@@ -1,10 +1,33 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 
+async function playMoLiHua(page: Page): Promise<void> {
+  await page
+    .getByRole("button", { name: /播放《茉莉花》|Play Mo Li Hua/ })
+    .click();
+}
+
+test("song selection comes before camera disclosure", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "开始一局", exact: true }).click();
+
+  await expect(
+    page.getByRole("heading", { name: "选择歌曲", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "播放《茉莉花》", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("即将推出", { exact: true })).toHaveCount(3);
+  await expect(
+    page.getByRole("heading", { name: /知情地开始/ }),
+  ).toHaveCount(0);
+});
+
 async function enterSyntheticMode(page: Page): Promise<void> {
   await page.getByRole("button", { name: "设置", exact: true }).click();
   await page.getByRole("switch", { name: /减少动态效果/ }).check();
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  await playMoLiHua(page);
   await page
     .getByRole("button", { name: "我明白了，继续", exact: true })
     .click();
@@ -130,6 +153,7 @@ async function reachStandingAudioStart(page: Page): Promise<void> {
 test("scored gameplay fills the viewport without page scrolling", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1024, height: 720 });
   await page.goto("/");
   await reachStandingAudioStart(page);
 
@@ -142,34 +166,51 @@ test("scored gameplay fills the viewport without page scrolling", async ({
   expect(await page.locator("[data-move-note]").count()).toBeGreaterThanOrEqual(
     4,
   );
-  await expect(page.locator("[data-move-note]").first()).toContainText(
-    /向左一步|向右一步|轻轻向前|轻轻退回/,
-  );
+  const moveIconBounds = await page
+    .locator("[data-move-note] .move-note__symbol")
+    .first()
+    .boundingBox();
+  expect(moveIconBounds?.width ?? 0).toBeGreaterThanOrEqual(112);
   const playerState = page.locator("[data-player-state]");
   await expect(playerState).toBeVisible();
   await expect(playerState).toHaveAttribute("data-player-state", "center");
-  await expect(playerState).toContainText("已在画面内");
   await expect(playerState).toContainText("已回到起始位置");
   const playerStateBounds = await playerState.boundingBox();
   expect(playerStateBounds?.width ?? 0).toBeGreaterThanOrEqual(200);
   const stateLabelSize = await page.evaluate<number>(`(() => {
     const label = document.querySelector(
-      ".player-state-panel__state-copy strong",
+      ".player-state-panel__label",
     );
     return label === null
       ? 0
       : Number.parseFloat(getComputedStyle(label).fontSize);
   })()`);
-  expect(stateLabelSize).toBeGreaterThanOrEqual(24);
+  expect(stateLabelSize).toBeGreaterThanOrEqual(28);
+  const playerAnchorTextSizes = await page.evaluate<number[]>(`Array.from(
+    document.querySelectorAll(
+      ".player-state-panel__you, .player-state-panel__label, .player-state-panel__issue",
+    ),
+    (element) => Number.parseFloat(getComputedStyle(element).fontSize),
+  )`);
+  expect(playerAnchorTextSizes.length).toBeGreaterThanOrEqual(2);
+  expect(playerAnchorTextSizes.every((size) => size >= 28)).toBe(true);
+  const currentCueSize = await page.evaluate<number>(`(() => {
+    const label = document.querySelector(".gameplay-now h1");
+    return label === null
+      ? 0
+      : Number.parseFloat(getComputedStyle(label).fontSize);
+  })()`);
+  expect(currentCueSize).toBeGreaterThanOrEqual(56);
+  const currentCueBounds = await page
+    .locator(".gameplay-current-cue__symbol")
+    .boundingBox();
+  expect(currentCueBounds?.width ?? 0).toBeGreaterThanOrEqual(128);
   const pauseBounds = await page
     .getByRole("button", { name: "暂停", exact: true })
     .boundingBox();
-  expect(pauseBounds?.height ?? 0).toBeGreaterThanOrEqual(56);
-  await expect(
-    page
-      .getByRole("list", { name: "动作时间提示" })
-      .getByText("现在做", { exact: true }),
-  ).toBeVisible();
+  expect(pauseBounds?.height ?? 0).toBeGreaterThanOrEqual(64);
+  await expect(page.getByText("稍后", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("现在做", { exact: true })).toHaveCount(0);
   const timingStages = await page.evaluate<(string | null)[]>(`Array.from(
     document.querySelectorAll("[data-move-note]"),
     (note) => note.getAttribute("data-timing-stage"),
@@ -178,6 +219,19 @@ test("scored gameplay fills the viewport without page scrolling", async ({
   await expect(
     page.getByRole("region", { name: "本局进度", exact: true }),
   ).toBeVisible();
+  await expect(page.getByTestId("phase-dot")).toHaveCount(4);
+  const mv = page.getByTestId("gameplay-mv");
+  await expect(mv).toBeVisible();
+  await expect(mv).toHaveAttribute("src", "/media/mo-li-hua-mv.mp4");
+  await expect(mv).toHaveAttribute("data-reduced-motion", "true");
+  const mvState = await page.evaluate<{ muted: boolean; paused: boolean }>(`(() => {
+    const video = document.querySelector("[data-testid='gameplay-mv']");
+    return {
+      muted: video instanceof HTMLVideoElement && video.muted,
+      paused: !(video instanceof HTMLVideoElement) || video.paused,
+    };
+  })()`);
+  expect(mvState).toEqual({ muted: true, paused: false });
   await expect(page.getByLabel("第 8 步")).toHaveCount(0);
   await expect(page.getByText("08 / 11", { exact: true })).toHaveCount(0);
 
@@ -200,6 +254,7 @@ test("scored gameplay fills the viewport without page scrolling", async ({
   expect(dimensions.pageHeight).toBeLessThanOrEqual(
     dimensions.viewportHeight + 1,
   );
+  expect(await page.evaluate("window.scrollY")).toBe(0);
 });
 
 test("seated gameplay uses visible hand-specific readiness guidance", async ({
@@ -225,7 +280,6 @@ test("seated gameplay uses visible hand-specific readiness guidance", async ({
 
   const playerState = page.locator("[data-player-state]");
   await expect(playerState).toBeVisible();
-  await expect(playerState).toContainText("双手清楚可见");
   await expect(playerState).toContainText("双手准备好了");
   await expect(
     page.getByRole("group", { name: "您的移动位置" }),
@@ -328,19 +382,35 @@ test("pause, resume, and stop are keyboard reachable during play", async ({
   await page.keyboard.press("Enter");
   await expect(page.getByText("已暂停", { exact: true })).toBeVisible();
   await expect(voiceGuidance).toBeVisible();
+  const resume = page.getByRole("button", {
+    name: "继续游戏",
+    exact: true,
+  });
+  await expect(resume).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(
+    page.getByRole("slider", { name: "提示音量", exact: true }),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(resume).toBeFocused();
+  const pauseTextSizes = await page.evaluate<number[]>(`Array.from(
+    document.querySelectorAll(
+      ".pause-overlay__heading > span, .pause-overlay__comfort > .button, .pause-overlay__comfort label",
+    ),
+    (element) => Number.parseFloat(getComputedStyle(element).fontSize),
+  )`);
+  expect(pauseTextSizes.length).toBeGreaterThanOrEqual(4);
+  expect(pauseTextSizes.every((size) => size >= 28)).toBe(true);
   await voiceGuidance.check();
   await expect(voiceGuidance).toBeChecked();
   const pausedStyle = await firstNote.getAttribute("style");
   await page.waitForTimeout(350);
   await expect(firstNote).toHaveAttribute("style", pausedStyle ?? "");
 
-  const resume = page.getByRole("button", {
-    name: "继续游戏",
-    exact: true,
-  });
   await resume.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByText("已暂停", { exact: true })).toBeHidden();
+  await expect(pause).toBeFocused();
 
   await page.evaluate(`
     Object.defineProperty(document, "hidden", {
@@ -409,6 +479,11 @@ test("disclosure precedes permission and camera-free demo remains available", as
   await page.keyboard.press("Enter");
 
   await expect(
+    page.getByRole("heading", { name: "选择歌曲", exact: true }),
+  ).toBeFocused();
+  await playMoLiHua(page);
+
+  await expect(
     page.getByText("不保存视频、照片、人脸或声音。", { exact: true }),
   ).toBeVisible();
   await expect(
@@ -457,6 +532,7 @@ test("a returning captured player reuses mode and reaches play without the full 
   await page
     .getByRole("button", { name: "开始今天的一局", exact: true })
     .click();
+  await playMoLiHua(page);
   await expect(
     page.getByRole("heading", { name: "现在打开摄像头？", exact: true }),
   ).toBeVisible();
@@ -510,14 +586,23 @@ test("classifier-backed tracking loss recovers and persists a quality-invalid re
     .getByRole("button", { name: "听到节拍，开始倒数", exact: true })
     .click();
 
-  const trackingOverlay = page.getByText("暂时看不清动作", {
+  const trackingOverlay = page.getByText("回到中间", {
     exact: true,
   });
   await expect(trackingOverlay).toBeVisible({ timeout: 10_000 });
   await expect(page.getByText("不计分", { exact: true }).last()).toBeVisible();
+  const recoveryPause = page
+    .locator(".tracking-overlay")
+    .getByRole("button", { name: "暂停", exact: true });
+  await expect(recoveryPause).toBeVisible();
+  await recoveryPause.click();
+  await expect(page.getByText("已暂停", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "暂停", exact: true }),
-  ).toBeVisible();
+    page.getByRole("button", { name: "继续游戏", exact: true }),
+  ).toBeFocused();
+  await page
+    .getByRole("button", { name: "继续游戏", exact: true })
+    .click();
   await expect(
     page.getByRole("button", { name: "停止并退出", exact: true }),
   ).toBeVisible();

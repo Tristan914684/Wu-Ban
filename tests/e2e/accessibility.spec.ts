@@ -26,8 +26,15 @@ async function expectPageToFitViewport(page: Page, screen: string) {
   ).toBeLessThanOrEqual(dimensions.viewportHeight + 1);
 }
 
+async function playMoLiHua(page: Page): Promise<void> {
+  await page
+    .getByRole("button", { name: /播放《茉莉花》|Play Mo Li Hua/ })
+    .click();
+}
+
 async function completeStandingSpectatorSession(page: Page): Promise<void> {
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  await playMoLiHua(page);
   await page
     .getByRole("button", { name: "我明白了，继续", exact: true })
     .click();
@@ -60,6 +67,7 @@ async function completeStandingSpectatorSession(page: Page): Promise<void> {
 async function reachStandingGameplay(page: Page): Promise<void> {
   await page.goto("/");
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  await playMoLiHua(page);
   await page
     .getByRole("button", { name: "我明白了，继续", exact: true })
     .click();
@@ -111,11 +119,10 @@ test("gameplay and paused comfort settings have no detectable axe violations", a
   await reachStandingGameplay(page);
 
   await expect(
-    page.getByRole("complementary", { name: "您的位置与动作识别" }),
+    page.getByRole("complementary", { name: "您的位置" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("list", { name: "动作时间提示" }),
-  ).toContainText("稍后下一个准备现在做");
+  await expect(page.getByTestId("gameplay-mv")).toBeVisible();
+  await expect(page.getByText("稍后", { exact: true })).toHaveCount(0);
   await expectNoAxeViolations(page);
 
   await page.getByRole("button", { name: "暂停", exact: true }).click();
@@ -151,6 +158,12 @@ test("screen changes orient keyboard and screen-reader users to the new task", a
   ).toBeChecked();
 
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  const songHeading = page.getByRole("heading", {
+    name: "选择歌曲",
+    exact: true,
+  });
+  await expect(songHeading).toBeFocused();
+  await playMoLiHua(page);
   const disclosureHeading = page.getByRole("heading", {
     name: /画面看过就 丢弃。/,
     exact: true,
@@ -251,6 +264,18 @@ test("reading surfaces remain available at a 200 percent equivalent viewport", a
   await expect(
     page.getByRole("button", { name: "设置", exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "选择歌曲", exact: true }),
+  ).toBeVisible();
+  const playButton = page.getByRole("button", {
+    name: "播放《茉莉花》",
+    exact: true,
+  });
+  await expect(playButton).toBeVisible();
+  expect((await playButton.boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(64);
+  await expect(page.getByText("即将推出", { exact: true })).toHaveCount(3);
+  await page.getByRole("button", { name: "返回", exact: true }).click();
   await page
     .getByRole("button", { name: "查看我的节奏", exact: true })
     .click();
@@ -271,6 +296,8 @@ test("primary setup screens fit the laptop viewport without page scrolling", asy
   await expectPageToFitViewport(page, "Home");
 
   await page.getByRole("button", { name: "开始一局", exact: true }).click();
+  await expectPageToFitViewport(page, "Song library");
+  await playMoLiHua(page);
   await expectPageToFitViewport(page, "Camera disclosure");
 
   await page
@@ -327,6 +354,8 @@ test("primary setup screens fit the laptop viewport without page scrolling", asy
   await page
     .getByRole("button", { name: "Start a session", exact: true })
     .click();
+  await expectPageToFitViewport(page, "English song library");
+  await playMoLiHua(page);
   await expectPageToFitViewport(page, "English camera disclosure");
 
   await page
