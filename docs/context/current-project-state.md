@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 12 August 2026
+**Last verified:** 13 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -159,8 +159,12 @@ file after material verified changes.
   correct step remains countable after the player promptly returns to centre
   instead of requiring them to hold the pose until cue evaluation. Centre
   return re-arms the next event and a held pose cannot score twice. A persistent
-  camera-state panel shows centred, left, right, forward, back, seated gesture,
-  and unclear states using plain language plus a five-position compass.
+  visible camera-state panel shows centred, left, right, forward, back, seated
+  gesture, and unclear states using plain language plus a five-position
+  compass. During standing play it keeps the calibrated centre target visible,
+  highlights the player's current position, and names the opposite physical
+  step needed to return: left asks for right, right asks for left, forward asks
+  for back, and back asks for forward.
 - The seven primary setup surfaces now respond to both viewport width and
   height. At the 1280 x 720 target, home, disclosure, permission, mode, safety,
   calibration, and movement practice require no page-level vertical scrolling;

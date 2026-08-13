@@ -863,13 +863,33 @@ export function GameplayScreen({
         </div>
         <section
           aria-atomic="true"
+          aria-label={
+            mode === "standing"
+              ? isChinese
+                ? "你的当前位置"
+                : "Your current position"
+              : isChinese
+                ? "当前手势"
+                : "Current gesture"
+          }
           aria-live="polite"
           className="live-player-state"
           data-player-state={playerState.key}
         >
-          <span className="live-player-state__eyebrow">
-            {isChinese ? "摄像头看到" : "CAMERA SEES"}
-          </span>
+          <div className="live-player-state__eyebrow">
+            <span>
+              {mode === "standing"
+                ? isChinese
+                  ? "你的位置"
+                  : "YOUR POSITION"
+                : isChinese
+                  ? "摄像头看到"
+                  : "CAMERA SEES"}
+            </span>
+            {mode === "standing" ? (
+              <small>{isChinese ? "目标：中央" : "TARGET: CENTRE"}</small>
+            ) : null}
+          </div>
           <div className="live-player-state__content">
             {mode === "standing" ? (
               <div
@@ -878,7 +898,7 @@ export function GameplayScreen({
               >
                 <span data-position="step-forward">↑</span>
                 <span data-position="step-left">←</span>
-                <span data-position="center">●</span>
+                <span data-position="center">◎</span>
                 <span data-position="step-right">→</span>
                 <span data-position="step-back">↓</span>
               </div>
@@ -889,7 +909,9 @@ export function GameplayScreen({
             )}
             <div>
               <strong>{playerState.label}</strong>
-              <span>{playerState.helper}</span>
+              <span className="live-player-state__instruction">
+                {playerState.helper}
+              </span>
             </div>
           </div>
         </section>

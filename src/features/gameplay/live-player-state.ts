@@ -16,16 +16,64 @@ export interface LivePlayerState {
 
 const MOVEMENT_LABELS: Record<
   MovementCue,
-  readonly [string, string, string]
+  readonly [string, string, string, string, string]
 > = {
-  "step-left": ["正在向左", "Moving left", "←"],
-  "step-right": ["正在向右", "Moving right", "→"],
-  "step-forward": ["正在向前", "Moving forward", "↑"],
-  "step-back": ["正在退回", "Moving back", "↓"],
-  "left-palm": ["检测到左手掌", "Left palm detected", "左"],
-  "right-palm": ["检测到右手掌", "Right palm detected", "右"],
-  "both-palms": ["检测到双手掌", "Both palms detected", "双"],
-  "index-hold": ["检测到食指", "Index finger detected", "指"],
+  "step-left": [
+    "中央左侧",
+    "Left of centre",
+    "向右迈一步，回到中央 →",
+    "Step RIGHT → to return",
+    "←",
+  ],
+  "step-right": [
+    "中央右侧",
+    "Right of centre",
+    "向左迈一步，回到中央 ←",
+    "Step LEFT ← to return",
+    "→",
+  ],
+  "step-forward": [
+    "中央前方",
+    "In front of centre",
+    "向后退一步，回到中央 ↓",
+    "Step BACK ↓ to return",
+    "↑",
+  ],
+  "step-back": [
+    "中央后方",
+    "Behind centre",
+    "向前迈一步，回到中央 ↑",
+    "Step FORWARD ↑ to return",
+    "↓",
+  ],
+  "left-palm": [
+    "检测到左手掌",
+    "Left palm detected",
+    "手势已看到；双手复位准备下一个",
+    "Gesture seen; reset your hands for the next move",
+    "左",
+  ],
+  "right-palm": [
+    "检测到右手掌",
+    "Right palm detected",
+    "手势已看到；双手复位准备下一个",
+    "Gesture seen; reset your hands for the next move",
+    "右",
+  ],
+  "both-palms": [
+    "检测到双手掌",
+    "Both palms detected",
+    "手势已看到；双手复位准备下一个",
+    "Gesture seen; reset your hands for the next move",
+    "双",
+  ],
+  "index-hold": [
+    "检测到食指",
+    "Index finger detected",
+    "手势已看到；双手复位准备下一个",
+    "Gesture seen; reset your hands for the next move",
+    "指",
+  ],
 };
 
 export function livePlayerState(
@@ -40,8 +88,8 @@ export function livePlayerState(
       key: "unclear",
       label: isChinese ? "暂时看不清位置" : "Position unclear",
       helper: isChinese
-        ? "回到画面中央；看清后再计分"
-        : "Return to the middle; scoring resumes when clear",
+        ? "慢慢回到中央轮廓；看清后再继续"
+        : "Return to the centre outline; continue when clear",
       symbol: "?",
     };
   }
@@ -53,15 +101,15 @@ export function livePlayerState(
         mode === "standing"
           ? isChinese
             ? "已在中央"
-            : "Centered"
+            : "You are centred"
           : isChinese
             ? "双手已复位，准备好了"
             : "Hands reset and ready",
       helper:
         mode === "standing"
           ? isChinese
-            ? "准备好了；轻轻迈出一步就会计数"
-            : "Ready; one gentle step is enough to count"
+            ? "位置正确；等动作到达亮线再移动"
+            : "Position ready; move when a cue reaches the line"
           : isChinese
             ? "做出下一个手势即可"
             : "Make the next hand gesture",
@@ -69,19 +117,12 @@ export function livePlayerState(
     };
   }
 
-  const [chineseLabel, englishLabel, symbol] =
+  const [chineseLabel, englishLabel, chineseHelper, englishHelper, symbol] =
     MOVEMENT_LABELS[observation.cue];
   return {
     key: observation.cue,
     label: isChinese ? chineseLabel : englishLabel,
-    helper:
-      mode === "standing"
-        ? isChinese
-          ? "这一步已看到；回到中央准备下一步"
-          : "Step seen; return to centre for the next move"
-        : isChinese
-          ? "手势已看到；双手复位准备下一个"
-          : "Gesture seen; reset your hands for the next move",
+    helper: isChinese ? chineseHelper : englishHelper,
     symbol,
   };
 }

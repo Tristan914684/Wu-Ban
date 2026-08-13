@@ -2981,19 +2981,132 @@ code {
   display: none;
 }
 
-/* The detection readout is removed from sight but kept in the accessibility
-   tree: it is an aria-live region, and display:none would silence the
-   announcements that non-visual players rely on. */
+/* Keep the current-position guide visible above the camera monitor. The
+   highlighted compass cell says where the player is; the large text gives the
+   opposite step needed to return to the calibrated centre. */
 .gameplay-screen .live-player-state {
-  position: absolute;
-  overflow: hidden;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  border: 0;
-  margin: -1px;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  top: clamp(38px, 5.5dvh, 48px);
+  bottom: auto;
+  left: var(--monitor-x);
+  overflow: visible;
+  width: var(--monitor-w);
+  min-width: 0;
+  height: auto;
+  box-sizing: border-box;
+  padding: 9px 11px 11px;
+  border: 2px solid var(--stage-gold-deep);
+  border-radius: 10px;
+  margin: 0;
+  clip-path: none;
+  color: var(--stage-cream);
+  background: rgb(21 10 16 / 94%);
+  box-shadow: 0 7px 0 rgb(0 0 0 / 36%);
+  transform: none;
+  white-space: normal;
+}
+
+.gameplay-screen .live-player-state__eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-color: rgb(242 193 78 / 34%);
+  color: var(--stage-gold);
+  letter-spacing: 0.12em;
+}
+
+.gameplay-screen .live-player-state__eyebrow small {
+  flex: none;
+  padding: 3px 5px;
+  border: 1px solid rgb(242 193 78 / 54%);
+  border-radius: 999px;
+  color: var(--stage-cream);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+}
+
+.gameplay-screen .live-player-state__content {
+  grid-template-columns: 70px minmax(0, 1fr);
+  gap: 9px;
+  padding-top: 7px;
+}
+
+.gameplay-screen .live-player-state__content > div:last-child {
+  gap: 5px;
+}
+
+.gameplay-screen .live-player-state__content strong {
+  color: var(--stage-cream);
+  font-size: clamp(19px, 1.65vw, 25px);
+  line-height: 1.05;
+}
+
+.gameplay-screen .live-player-state__instruction {
+  display: block;
+  padding-left: 7px;
+  border-left: 3px solid var(--stage-gold);
+  color: var(--stage-gold);
+  font-size: clamp(13px, 1.05vw, 15px);
+  font-weight: 850;
+  line-height: 1.22;
+}
+
+.gameplay-screen .live-player-state__compass {
+  width: 68px;
+  height: 68px;
+  color: rgb(253 243 223 / 48%);
+}
+
+.gameplay-screen .live-player-state__compass span {
+  width: 23px;
+  height: 23px;
+  border-color: rgb(253 243 223 / 24%);
+  color: inherit;
+  background: rgb(253 243 223 / 5%);
+  font-size: 20px;
+}
+
+.gameplay-screen .live-player-state__compass [data-position="center"] {
+  border: 2px solid var(--stage-gold);
+  color: var(--stage-gold);
+  background: transparent;
+}
+
+.gameplay-screen .live-player-state[data-player-state="center"]
+  [data-position="center"] {
+  border-color: #bff4dd;
+  color: #10271e;
+  background: #78d0ac;
+  box-shadow: 0 0 0 3px rgb(120 208 172 / 24%);
+}
+
+.gameplay-screen .live-player-state[data-player-state="step-left"]
+  [data-position="step-left"],
+.gameplay-screen .live-player-state[data-player-state="step-right"]
+  [data-position="step-right"],
+.gameplay-screen .live-player-state[data-player-state="step-forward"]
+  [data-position="step-forward"],
+.gameplay-screen .live-player-state[data-player-state="step-back"]
+  [data-position="step-back"] {
+  border-color: #fff8e2;
+  color: #251508;
+  background: var(--stage-gold);
+  box-shadow: 0 0 0 3px rgb(242 193 78 / 24%);
+  transform: scale(1.18);
+}
+
+.gameplay-screen .live-player-state[data-player-state="center"]
+  .live-player-state__instruction {
+  border-left-color: #78d0ac;
+  color: #bff4dd;
+}
+
+.gameplay-screen .live-player-state[data-player-state="unclear"] {
+  border-color: #e7a85a;
+  color: var(--stage-cream);
+  background: rgb(66 34 15 / 96%);
 }
 
 /* Feedback moves off the camera and onto its own line beneath the runway. */

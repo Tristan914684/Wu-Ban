@@ -2,7 +2,7 @@
 
 **Status:** Active evidence record; locally verified, demo-device gates open  
 **Owner:** Product and gameplay engineering  
-**Last verified:** 3 August 2026
+**Last verified:** 13 August 2026
 **Reference when:** Changing or reporting the consent-to-result player journey.  
 **Agent obligation:** Keep automated, simulated, local-browser, real-camera,
 demo-device, and deployed evidence distinct.
@@ -28,7 +28,8 @@ The browser application implements:
 - forgiving classifier-version-2 standing thresholds, one-cue movement-event
   capture through a prompt centre return, strongest-axis selection when a
   forward foot also drifts sideways in the camera image, and a persistent
-  scored-play compass naming the live centred/directional/unclear camera state;
+  scored-play compass naming the live centred/directional/unclear camera state,
+  keeping the centre target visible, and naming the opposite corrective step;
 - an unscored warm-up followed by the authored Follow, Rhythm, and
   Memory/no-go durations;
 - deterministic bounded preview support, an always-available gentler action,
@@ -77,18 +78,20 @@ repeated from a clean archived checkout with Node.js `24.18.0` and npm
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 36 files, 118 tests passed |
+| `npm test` | 36 files, 129 tests passed |
 | `npm run test:integration` | 3 files, 7 tests passed |
 | `npm run build` | Vite production build passed |
-| `npm run test:e2e` | 24-test suite passed before this follow-up; 2 affected Chrome tests passed afterward |
-| `npm run docs:validate` | 94 documentation files and 2 entrypoints passed |
+| `npm run test:e2e` | 13 player-flow Chrome tests passed for this follow-up |
+| `npm run docs:validate` | 95 documentation files and 2 entrypoints passed |
 
 At the time of the movement-runway, gentle-step, and live-position follow-ups,
-documentation validation, lint, 118 unit/component tests, 7 IndexedDB
+documentation validation, lint, 129 unit/component tests, 7 IndexedDB
 integration/migration tests, TypeScript compilation, and the production build
-passed. Focused production Chrome checks covered the
-scored-play viewport and Pause/Resume/Stop journey; demo-device camera evidence
-remains open.
+passed. The 13-test player-flow Chrome file passed at 1280 x 720, including the
+visible current-position guide, scored-play viewport, and
+Pause/Resume/Stop journey. The bundle-budget gate remains blocked because the
+required local MediaPipe model and WASM assets are absent from the worktree;
+demo-device camera evidence remains open.
 
 For the 9 August forward-step axis-conflict fix, the 16 standing-classifier
 tests, the 26-test focused movement set, lint, typecheck, 7 integration tests,
@@ -168,9 +171,9 @@ desktop viewport:
     cues while Pause remains reachable; its automated axe scan reports no
     detectable violations.
 12. A headed 1280 x 720 browser pass verifies the persistent five-position
-    camera-state compass is visible beside the runway, explicitly says the
-    player is centred, explains that one gentle step is sufficient, and does
-    not reintroduce page scrolling.
+    camera-state compass is a visible 243 x 126 px panel beside the runway,
+    keeps the centre target explicit, tells an off-centre player which opposite
+    step returns them to centre, and does not reintroduce page scrolling.
 
 The production bundle was also served through Vite Preview at 1280 x 720 in
 Chrome. After its generated service worker installed the exact bundle,

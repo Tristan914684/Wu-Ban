@@ -20,7 +20,6 @@ than editing the decision or its original rationale.
 |---|---|---|
 | [0001](0001-local-first-browser-boundary.md) | Accepted | Browser-first local camera boundary |
 | [0002](0002-single-primary-player.md) | Accepted | One trend-owning primary player |
-| [0003](0003-wellness-claim-boundary.md) | Accepted | Non-diagnostic wellness claim boundary |
 | [0004](0004-consented-caregiver-check-in.md) | Accepted | Consented check-in, not health alert |
 | [0005](0005-browser-application-stack.md) | Accepted | Vite React browser stack with MediaPipe landmarks |
 

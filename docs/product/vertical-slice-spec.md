@@ -5,7 +5,7 @@
 **Target milestone:** M1 movement trace completion and M2 playable slice  
 **PRD requirements:** FR-001 through FR-038, NFR-001 through NFR-031  
 **Business rules:** BR-001 through BR-008, BR-013 through BR-018  
-**Related ADRs:** ADR-0001, ADR-0002, ADR-0003, ADR-0005
+**Related ADRs:** ADR-0001, ADR-0002, ADR-0005
 
 ## Outcome
 

@@ -145,10 +145,20 @@ test("scored gameplay fills the viewport without page scrolling", async ({
   await expect(page.locator("[data-move-note]").first()).toContainText(
     /向左一步|向右一步|轻轻向前|轻轻退回/,
   );
-  const playerState = page.locator("[data-player-state]");
+  const playerState = page.getByRole("region", { name: "你的当前位置" });
+  await expect(playerState).toBeVisible();
   await expect(playerState).toHaveAttribute("data-player-state", "center");
+  await expect(playerState).toContainText("目标：中央");
   await expect(playerState).toContainText("已在中央");
-  await expect(playerState).toContainText("准备好了；轻轻迈出一步就会计数");
+  await expect(playerState).toContainText(
+    "位置正确；等动作到达亮线再移动",
+  );
+  await expect(
+    playerState.locator('[data-position="center"]'),
+  ).toHaveText("◎");
+  const playerStateBox = await playerState.boundingBox();
+  expect(playerStateBox?.width).toBeGreaterThanOrEqual(168);
+  expect(playerStateBox?.height).toBeGreaterThanOrEqual(96);
 
   const accessibility = await new AxeBuilder({ page }).analyze();
   expect(

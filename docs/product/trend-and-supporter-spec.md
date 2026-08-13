@@ -5,7 +5,7 @@
 **Target milestone:** M3 longitudinal and supporter proof  
 **PRD requirements:** FR-11 through FR-14  
 **Business rules:** BR-005 through BR-013  
-**Related ADRs:** ADR-0001, ADR-0003, ADR-0004
+**Related ADRs:** ADR-0001, ADR-0004
 
 ## Outcome
 

@@ -56,7 +56,6 @@ docs/
 │   ├── README.md
 │   ├── 0001-local-first-browser-boundary.md
 │   ├── 0002-single-primary-player.md
-│   ├── 0003-wellness-claim-boundary.md
 │   ├── 0004-consented-caregiver-check-in.md
 │   └── 0005-browser-application-stack.md
 ├── ai/
