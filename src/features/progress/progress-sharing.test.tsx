@@ -120,6 +120,9 @@ describe("progress and sharing UI", () => {
       screen.getByText("Using on-device AI to analyze your performance"),
     ).toBeInTheDocument();
     expect(screen.getByText("Declined")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Your gameplay trend declined." }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/8 clear sessions analyzed locally/)).toBeInTheDocument();
     expect(
       screen.getByText(/Beat and Memory repeatedly moved below/),
@@ -154,6 +157,9 @@ describe("progress and sharing UI", () => {
     );
 
     expect(screen.getByText("Stable")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Your gameplay trend is stable." }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/0 clear sessions analyzed locally/)).toBeInTheDocument();
     expect(screen.queryByText(/Collecting data/i)).not.toBeInTheDocument();
   });
@@ -175,6 +181,9 @@ describe("progress and sharing UI", () => {
     );
 
     expect(screen.getByText("Improving")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Your gameplay trend is improving." }),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/Beat and Memory repeatedly moved above/),
     ).toBeInTheDocument();

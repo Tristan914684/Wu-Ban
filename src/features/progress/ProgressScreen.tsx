@@ -27,34 +27,27 @@ function statusCopy(
   language: Language,
 ): { readonly title: string; readonly description: string } {
   const isChinese = language === "zh";
-  switch (report.status) {
-    case "insufficient-history":
+  switch (report.performanceTrend) {
+    case "stable":
       return {
-        title: isChinese ? "正在认识你的平常节奏。" : "Learning your usual rhythm.",
+        title: isChinese ? "你的游戏趋势稳定。" : "Your gameplay trend is stable.",
         description: isChinese
-          ? `还需要 ${report.sessionsNeeded} 次同一方式的清晰游戏，才能形成初步平常范围。`
-          : `${report.sessionsNeeded} more clear session${report.sessionsNeeded === 1 ? "" : "s"} in this mode will form a provisional usual range.`,
+          ? "现有游戏记录没有显示重复的整体变化。"
+          : "The available gameplay history does not show a repeated overall change.",
       };
-    case "baseline-ready":
+    case "declined":
       return {
-        title: isChinese ? "初步平常范围已形成。" : "Your provisional usual range is ready.",
+        title: isChinese ? "你的游戏趋势有所下降。" : "Your gameplay trend declined.",
         description: isChinese
-          ? "近期清晰记录还不足三次，所以不会判断是否有持续变化。"
-          : "There are not yet three recent clear sessions, so no sustained change is inferred.",
+          ? "两个或以上方面重复低于个人平常范围；疲劳、光线和熟悉程度都可能影响结果。"
+          : "Two or more areas repeatedly moved below the personal usual range; tiredness, lighting, and familiarity can affect the result.",
       };
-    case "usual-range":
+    case "improving":
       return {
-        title: isChinese ? "最近仍在平常范围内。" : "Recent play remains in the usual range.",
+        title: isChinese ? "你的游戏趋势正在改善。" : "Your gameplay trend is improving.",
         description: isChinese
-          ? "这是游戏记录之间的比较，不是健康结论。"
-          : "This compares gameplay sessions and is not a health conclusion.",
-      };
-    case "sustained-shift":
-      return {
-        title: isChinese ? "有两类节奏出现重复变化。" : "Two rhythm areas changed repeatedly.",
-        description: isChinese
-          ? "疲劳、不适、光线和熟悉程度都可能影响结果；可以先友好地关心一下。"
-          : "Tiredness, discomfort, lighting, and familiarity can all affect the result; a friendly check-in may help.",
+          ? "两个或以上方面重复高于个人平常范围。"
+          : "Two or more areas repeatedly moved above the personal usual range.",
       };
   }
 }
