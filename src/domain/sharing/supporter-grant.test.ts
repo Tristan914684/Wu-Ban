@@ -27,6 +27,40 @@ function usualReport() {
   });
 }
 
+function improvingReport() {
+  const baseline = Array.from({ length: 5 }, (_, index) =>
+    buildSessionSummary({
+      id: `baseline-${index}`,
+      completedAt: new Date(
+        Date.UTC(2026, 6, index + 1),
+      ).toISOString(),
+      measures: {
+        beatAccuracy: 0.5,
+        shapeAccuracy: 0.5,
+        flowRecovery: 0.5,
+        memoryControl: 0.5,
+      },
+    }),
+  );
+  const recent = [6, 7, 8].map((day) =>
+    buildSessionSummary({
+      id: `recent-${day}`,
+      completedAt: new Date(Date.UTC(2026, 6, day)).toISOString(),
+      measures: {
+        beatAccuracy: day === 8 ? 0.55 : 0.75,
+        shapeAccuracy: 0.5,
+        flowRecovery: 0.5,
+        memoryControl: day === 8 ? 0.55 : 0.75,
+      },
+    }),
+  );
+
+  return evaluatePersonalTrend([...baseline, ...recent], {
+    mode: "standing",
+    simulated: false,
+  });
+}
+
 describe("supporter sharing", () => {
   it("is inactive until a purpose-specific grant exists (BR-009)", () => {
     expect(isGrantActive(null)).toBe(false);
@@ -113,6 +147,22 @@ describe("supporter sharing", () => {
     });
 
     expect(authoriseCheckIn(usualReport(), grant, "Preview")).toEqual({
+      kind: "blocked",
+      reason: "no-sustained-shift",
+    });
+  });
+
+  it("does not authorise a supporter check-in for an improving gameplay trend", () => {
+    const grant = createSupporterGrant({
+      grantId: "grant-1",
+      supporterBindingId: "local-preview",
+      grantedAt: "2026-07-26T10:00:00.000Z",
+    });
+    const report = improvingReport();
+
+    expect(report.performanceTrend).toBe("improving");
+    expect(report.status).toBe("usual-range");
+    expect(authoriseCheckIn(report, grant, "Preview")).toEqual({
       kind: "blocked",
       reason: "no-sustained-shift",
     });
