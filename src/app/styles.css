@@ -1035,13 +1035,22 @@ code {
 }
 
 .camera-stage {
-  position: relative;
+  container-name: calibration-stage;
+  container-type: inline-size;
+  display: grid;
   width: min(100%, 560px);
+  gap: 10px;
+}
+
+.camera-stage__viewport {
+  position: relative;
+  width: 100%;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   border: 1px solid var(--ink);
   background: #322d28;
   box-shadow: var(--shadow-warm);
+  box-sizing: border-box;
 }
 
 .camera-stage video {
@@ -1160,13 +1169,24 @@ code {
   line-height: 1.35;
 }
 
+.camera-stage__status-rail {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  align-items: stretch;
+  gap: 10px;
+}
+
+.camera-stage__status-rail .perception-status {
+  position: static;
+  width: auto;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 .camera-stage__status {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 3;
-  width: fit-content;
-  max-width: calc(100% - 24px);
+  display: flex;
+  min-width: 0;
+  align-items: center;
   margin: 0;
   padding: 7px 11px;
   border: 1px solid rgb(250 246 237 / 36%);
@@ -1174,6 +1194,12 @@ code {
   color: var(--paper-light);
   background: rgb(26 22 20 / 82%);
   font-size: 14px;
+}
+
+@container calibration-stage (max-width: 460px) {
+  .camera-stage__status-rail {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .camera-stage__guidance {
@@ -3948,7 +3974,7 @@ code {
 
 @media (forced-colors: active) {
   .button,
-  .camera-stage,
+  .camera-stage__viewport,
   .result-score,
   .dusk-art,
   .personal-pattern-report,

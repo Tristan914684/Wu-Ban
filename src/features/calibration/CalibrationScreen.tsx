@@ -225,61 +225,73 @@ export function CalibrationScreen({
     <StepLayout
       aside={
         <div className="camera-stage">
-          {source === "camera" ? (
-            <>
-              <video
-                aria-label={isChinese ? "摄像头预览" : "Camera preview"}
-                autoPlay
-                data-camera-preview
-                muted
-                playsInline
-                ref={videoRef}
-              />
-              <TrackingLandmarkOverlay
-                frame={trackedFrame}
-                language={language}
-                mode={mode}
-              />
+          <div
+            className="camera-stage__viewport"
+            data-calibration-camera-viewport
+          >
+            {source === "camera" ? (
+              <>
+                <video
+                  aria-label={isChinese ? "摄像头预览" : "Camera preview"}
+                  autoPlay
+                  data-camera-preview
+                  muted
+                  playsInline
+                  ref={videoRef}
+                />
+                <TrackingLandmarkOverlay
+                  frame={trackedFrame}
+                  language={language}
+                  mode={mode}
+                />
+              </>
+            ) : (
+              <div className="synthetic-figure" aria-hidden="true">
+                <span className="synthetic-figure__head" />
+                <span className="synthetic-figure__body" />
+                <span className="synthetic-figure__arms" />
+              </div>
+            )}
+            <FramingTargetOverlay language={language} mode={mode} />
+            {state.kind === "framing" ? (
+              <>
+                <p className="camera-stage__parts">
+                  {trackingPartsLabel(trackedFrame, language, mode)}
+                </p>
+                <p className="camera-stage__guidance">{framingMessage}</p>
+              </>
+            ) : null}
+          </div>
+          <div
+            className="camera-stage__status-rail"
+            data-calibration-status-rail
+          >
+            <p className="camera-stage__status">
+              {state.kind === "loading"
+                ? isChinese
+                  ? "正在准备本机模型…"
+                  : "Preparing local model…"
+                : state.kind === "framing"
+                  ? isChinese
+                    ? `稳定追踪 ${incompleteCalibrationPercent(state.progress)}%`
+                    : `Stable tracking ${incompleteCalibrationPercent(state.progress)}%`
+                  : state.kind === "ready"
+                    ? isChinese
+                      ? "校准完成 — 100%"
+                      : "Calibration complete — 100%"
+                    : isChinese
+                      ? "暂时无法读取"
+                      : "Could not read input"}
+            </p>
+            {source === "camera" ? (
               <PerceptionStatus
                 frame={trackedFrame}
                 language={language}
                 mode={mode}
                 observation={perceptionObservation}
               />
-            </>
-          ) : (
-            <div className="synthetic-figure" aria-hidden="true">
-              <span className="synthetic-figure__head" />
-              <span className="synthetic-figure__body" />
-              <span className="synthetic-figure__arms" />
-            </div>
-          )}
-          <FramingTargetOverlay language={language} mode={mode} />
-          <p className="camera-stage__status">
-            {state.kind === "loading"
-              ? isChinese
-                ? "正在准备本机模型…"
-                : "Preparing local model…"
-              : state.kind === "framing"
-                ? isChinese
-                  ? `稳定追踪 ${incompleteCalibrationPercent(state.progress)}%`
-                  : `Stable tracking ${incompleteCalibrationPercent(state.progress)}%`
-                : state.kind === "ready"
-                  ? isChinese
-                    ? "校准完成 — 100%"
-                    : "Calibration complete — 100%"
-                  : isChinese
-                    ? "暂时无法读取"
-                    : "Could not read input"}
-          </p>
-          {state.kind === "framing" ? (
-            <>
-              <p className="camera-stage__parts">
-                {trackingPartsLabel(trackedFrame, language, mode)}
-              </p>
-              <p className="camera-stage__guidance">{framingMessage}</p>
-            </>
-          ) : null}
+            ) : null}
+          </div>
         </div>
       }
       description={<p>{instruction}</p>}

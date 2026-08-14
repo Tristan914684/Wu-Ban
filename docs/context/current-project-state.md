@@ -111,7 +111,9 @@ file after material verified changes.
   updates the document language for assistive technology. Language and the
   persistent reduced-dynamics switch live in a compact Display and comfort
   disclosure instead of occupying the primary header row.
-- Calibration status and recovery guidance occupy separate preview regions.
+- Calibration completion and on-device model status now occupy a responsive
+  rail below the camera preview, while framing geometry, detected-parts copy,
+  and positioning guidance remain aligned inside the preview.
   Missing landmarks now prompt repositioning instead of being labelled as a
   lighting problem, and the MediaPipe provider confidence gate is aligned to
   the domain gate at `0.45`. Active calibration progress is capped at 99%;

@@ -136,7 +136,8 @@ docs/
 │   └── user-personas.md
 ├── superpowers/
 │   ├── plans/
-│   │   └── 2026-08-12-calibration-completion-freeze.md
+│   │   ├── 2026-08-12-calibration-completion-freeze.md
+│   │   └── 2026-08-14-calibration-status-rail.md
 │   └── specs/
 │       ├── 2026-08-12-calibration-completion-freeze-design.md
 │       └── 2026-08-14-calibration-status-rail-design.md
@@ -284,6 +285,8 @@ docs/
 
 - `superpowers/plans/2026-08-12-calibration-completion-freeze.md` provides the
   test-first implementation sequence for the approved calibration correction.
+- `superpowers/plans/2026-08-14-calibration-status-rail.md` provides the
+  test-first implementation sequence for the approved below-camera status rail.
 - `superpowers/specs/2026-08-12-calibration-completion-freeze-design.md`
   records the approved standing and seated calibration-completion contract.
 - `superpowers/specs/2026-08-14-calibration-status-rail-design.md` records the

@@ -89,6 +89,49 @@ describe("calibration provider recovery", () => {
   });
 });
 
+describe("calibration layout", () => {
+  it("keeps calibration and model status outside the camera viewport", async () => {
+    installAnimationFrameQueue();
+    const camera = new BrowserCamera();
+    const detector = new MediaPipeLandmarkDetector();
+    vi.spyOn(camera, "attachPreview").mockResolvedValue();
+    vi.spyOn(detector, "load").mockResolvedValue();
+
+    const { container } = render(
+      <CalibrationScreen
+        camera={camera}
+        detector={detector}
+        language="en"
+        mode="standing"
+        onComplete={vi.fn()}
+        onUseSyntheticFallback={vi.fn()}
+        source="camera"
+      />,
+    );
+
+    await screen.findByText("Stable tracking 0%");
+    const viewport = container.querySelector<HTMLElement>(
+      "[data-calibration-camera-viewport]",
+    );
+    const statusRail = container.querySelector<HTMLElement>(
+      "[data-calibration-status-rail]",
+    );
+    if (viewport === null || statusRail === null) {
+      throw new Error("Expected a camera viewport and an external status rail.");
+    }
+
+    expect(viewport).toContainElement(screen.getByLabelText("Camera preview"));
+    expect(viewport).not.toContainElement(
+      screen.getByText("Stable tracking 0%"),
+    );
+    expect(viewport).not.toContainElement(
+      screen.getByText("ON-DEVICE POSE AI"),
+    );
+    expect(statusRail).toContainElement(screen.getByText("Stable tracking 0%"));
+    expect(statusRail).toContainElement(screen.getByText("ON-DEVICE POSE AI"));
+  });
+});
+
 describe("calibration completion", () => {
   it("shows 100% only after freezing standing calibration", async () => {
     const callbacks = installAnimationFrameQueue();
