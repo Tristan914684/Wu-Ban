@@ -16,28 +16,34 @@ export type TrendStatus =
   | "usual-range"
   | "sustained-shift";
 
+export type PerformanceTrend = "stable" | "declined" | "improving";
+
 export interface MetricBaseline {
   readonly median: number;
   readonly medianAbsoluteDeviation: number;
   readonly unfavourableThreshold: number;
+  readonly improvementThreshold: number;
 }
 
 export interface RecentTrendSession {
   readonly sessionId: string;
   readonly completedAt: string;
   readonly shiftedFamilies: readonly MetricFamily[];
+  readonly improvingFamilies: readonly MetricFamily[];
 }
 
 export type MetricPatternStatus =
   | "collecting"
   | "within-usual-range"
-  | "repeated-change";
+  | "repeated-decline"
+  | "repeated-improvement";
 
 export interface MetricTrendEvidence {
   readonly baselineMedian: number;
   readonly recentMedian: number | null;
   readonly changeFromBaseline: number | null;
   readonly shiftedRecentSessionCount: number;
+  readonly improvedRecentSessionCount: number;
   readonly status: MetricPatternStatus;
 }
 
@@ -53,6 +59,7 @@ export interface TrendReport {
   readonly mode: SessionMode;
   readonly simulated: boolean;
   readonly status: TrendStatus;
+  readonly performanceTrend: PerformanceTrend;
   readonly validSessionCount: number;
   readonly sessionsNeeded: number;
   readonly baselineSessionIds: readonly string[];
@@ -61,6 +68,7 @@ export interface TrendReport {
   readonly baselines: Readonly<Record<MetricFamily, MetricBaseline>> | null;
   readonly metricEvidence: Readonly<Record<MetricFamily, MetricTrendEvidence>> | null;
   readonly sustainedFamilies: readonly MetricFamily[];
+  readonly improvingFamilies: readonly MetricFamily[];
 }
 
 const METRIC_FAMILIES: readonly MetricFamily[] = [
@@ -98,10 +106,12 @@ function median(values: readonly number[]): number {
 function baselineFor(values: readonly number[]): MetricBaseline {
   const centre = median(values);
   const mad = median(values.map((value) => Math.abs(value - centre)));
+  const personalRange = Math.max(0.12, 2 * mad);
   return {
     median: centre,
     medianAbsoluteDeviation: mad,
-    unfavourableThreshold: centre - Math.max(0.12, 2 * mad),
+    unfavourableThreshold: centre - personalRange,
+    improvementThreshold: centre + personalRange,
   };
 }
 
@@ -143,6 +153,7 @@ function emptyReport(input: {
     mode: input.mode,
     simulated: input.simulated,
     status: "insufficient-history",
+    performanceTrend: "stable",
     validSessionCount: input.validSessionCount,
     sessionsNeeded: Math.max(0, 5 - input.validSessionCount),
     baselineSessionIds: [],
@@ -151,6 +162,7 @@ function emptyReport(input: {
     baselines: null,
     metricEvidence: null,
     sustainedFamilies: [],
+    improvingFamilies: [],
   };
 }
 
@@ -202,6 +214,11 @@ export function evaluatePersonalTrend(
         valueForFamily(summary.score.measures, family) <
         baselines[family].unfavourableThreshold,
     ),
+    improvingFamilies: METRIC_FAMILIES.filter(
+      (family) =>
+        valueForFamily(summary.score.measures, family) >
+        baselines[family].improvementThreshold,
+    ),
   }));
   const metricEvidence = Object.fromEntries(
     METRIC_FAMILIES.map((family) => {
@@ -211,8 +228,13 @@ export function evaluatePersonalTrend(
       const shiftedRecentSessionCount = recentSessions.filter((session) =>
         session.shiftedFamilies.includes(family),
       ).length;
-      const repeatedChange =
+      const improvedRecentSessionCount = recentSessions.filter((session) =>
+        session.improvingFamilies.includes(family),
+      ).length;
+      const repeatedDecline =
         recentSessions.length >= 3 && shiftedRecentSessionCount >= 2;
+      const repeatedImprovement =
+        recentSessions.length >= 3 && improvedRecentSessionCount >= 2;
       const recentMedian =
         recentValues.length === 0 ? null : median(recentValues);
       const evidence: MetricTrendEvidence = {
@@ -223,18 +245,24 @@ export function evaluatePersonalTrend(
             ? null
             : rounded(recentMedian - baselines[family].median),
         shiftedRecentSessionCount,
+        improvedRecentSessionCount,
         status:
           recentSessions.length < 3
             ? "collecting"
-            : repeatedChange
-              ? "repeated-change"
-              : "within-usual-range",
+            : repeatedDecline
+              ? "repeated-decline"
+              : repeatedImprovement
+                ? "repeated-improvement"
+                : "within-usual-range",
       };
       return [family, evidence];
     }),
   ) as Record<MetricFamily, MetricTrendEvidence>;
   const sustainedFamilies = METRIC_FAMILIES.filter(
-    (family) => metricEvidence[family].status === "repeated-change",
+    (family) => metricEvidence[family].status === "repeated-decline",
+  );
+  const improvingFamilies = METRIC_FAMILIES.filter(
+    (family) => metricEvidence[family].status === "repeated-improvement",
   );
   const status: TrendStatus =
     recentSessions.length < 3
@@ -242,6 +270,16 @@ export function evaluatePersonalTrend(
       : sustainedFamilies.length >= 2
         ? "sustained-shift"
         : "usual-range";
+  const performanceTrend: PerformanceTrend =
+    recentSessions.length < 3
+      ? "stable"
+      : sustainedFamilies.length >= 2 &&
+          sustainedFamilies.length > improvingFamilies.length
+        ? "declined"
+        : improvingFamilies.length >= 2 &&
+            improvingFamilies.length > sustainedFamilies.length
+          ? "improving"
+          : "stable";
   const recentStart =
     recentSessions.at(0)?.completedAt ?? baselineSessions.at(-1)!.completedAt;
   const recentEnd =
@@ -253,6 +291,7 @@ export function evaluatePersonalTrend(
     mode: input.mode,
     simulated: input.simulated,
     status,
+    performanceTrend,
     validSessionCount: comparable.length,
     sessionsNeeded: 0,
     baselineSessionIds: baselineSessions.map((summary) => summary.sessionId),
@@ -261,5 +300,6 @@ export function evaluatePersonalTrend(
     baselines,
     metricEvidence,
     sustainedFamilies,
+    improvingFamilies,
   };
 }

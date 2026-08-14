@@ -25,6 +25,7 @@ describe("personal trend rule", () => {
     );
 
     expect(report.status).toBe("insufficient-history");
+    expect(report.performanceTrend).toBe("stable");
     expect(report.validSessionCount).toBe(3);
     expect(report.sessionsNeeded).toBe(2);
   });
@@ -86,6 +87,7 @@ describe("personal trend rule", () => {
     });
 
     expect(report.status).toBe("sustained-shift");
+    expect(report.performanceTrend).toBe("declined");
     expect(report.sustainedFamilies).toEqual(["beat", "memory"]);
     expect(report.ruleVersion).toBe(1);
     expect(report.analysisWindow).toEqual({
@@ -97,7 +99,7 @@ describe("personal trend rule", () => {
       recentMedian: 0.62,
       changeFromBaseline: -0.23,
       shiftedRecentSessionCount: 2,
-      status: "repeated-change",
+      status: "repeated-decline",
     });
     expect(report.metricEvidence?.shape).toMatchObject({
       recentMedian: 0.85,
@@ -128,6 +130,90 @@ describe("personal trend rule", () => {
       status: "collecting",
     });
     expect(report.sustainedFamilies).toEqual([]);
+  });
+
+  it("reports improving when two families repeatedly rise above the personal range", () => {
+    const baseline = Array.from({ length: 5 }, (_, index) =>
+      datedSession(index + 1, {
+        measures: {
+          beatAccuracy: 0.5,
+          shapeAccuracy: 0.5,
+          flowRecovery: 0.5,
+          memoryControl: 0.5,
+        },
+      }),
+    );
+    const recent = [
+      datedSession(6, {
+        measures: {
+          beatAccuracy: 0.75,
+          shapeAccuracy: 0.5,
+          flowRecovery: 0.5,
+          memoryControl: 0.75,
+        },
+      }),
+      datedSession(7, {
+        measures: {
+          beatAccuracy: 0.76,
+          shapeAccuracy: 0.5,
+          flowRecovery: 0.5,
+          memoryControl: 0.77,
+        },
+      }),
+      datedSession(8, {
+        measures: {
+          beatAccuracy: 0.55,
+          shapeAccuracy: 0.5,
+          flowRecovery: 0.5,
+          memoryControl: 0.55,
+        },
+      }),
+    ];
+
+    const report = evaluatePersonalTrend([...baseline, ...recent], {
+      mode: "standing",
+      simulated: false,
+    });
+
+    expect(report.performanceTrend).toBe("improving");
+    expect(report.improvingFamilies).toEqual(["beat", "memory"]);
+    expect(report.metricEvidence?.beat).toMatchObject({
+      improvedRecentSessionCount: 2,
+      status: "repeated-improvement",
+    });
+    expect(report.status).toBe("usual-range");
+  });
+
+  it("reports stable when repeated improvements and declines are tied", () => {
+    const baseline = Array.from({ length: 5 }, (_, index) =>
+      datedSession(index + 1, {
+        measures: {
+          beatAccuracy: 0.5,
+          shapeAccuracy: 0.5,
+          flowRecovery: 0.5,
+          memoryControl: 0.5,
+        },
+      }),
+    );
+    const recent = [6, 7, 8].map((index) =>
+      datedSession(index, {
+        measures: {
+          beatAccuracy: index === 8 ? 0.55 : 0.75,
+          memoryControl: index === 8 ? 0.55 : 0.75,
+          shapeAccuracy: index === 8 ? 0.45 : 0.25,
+          flowRecovery: index === 8 ? 0.45 : 0.25,
+        },
+      }),
+    );
+
+    const report = evaluatePersonalTrend([...baseline, ...recent], {
+      mode: "standing",
+      simulated: false,
+    });
+
+    expect(report.sustainedFamilies).toEqual(["shape", "flow"]);
+    expect(report.improvingFamilies).toEqual(["beat", "memory"]);
+    expect(report.performanceTrend).toBe("stable");
   });
 
   it("keeps deterministic demo history visibly simulated", () => {
