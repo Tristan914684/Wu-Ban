@@ -10,7 +10,8 @@
 ## Outcome
 
 A player can review a transparent personal movement-and-attention pattern,
-read a structured report that flags sustained changes worth checking in about,
+read a structured report with a Stable, Declined, or Improving gameplay result,
+see sustained downward changes worth checking in about,
 switch to an unmistakably simulated trend demonstration, separately grant or
 revoke one supporter scope, and preview a calm non-diagnostic check-in.
 
@@ -41,6 +42,8 @@ channel or credentials have yet been selected.
 - A versioned prototype shift rule over Beat, Shape, Flow, and Memory.
 - A structured longitudinal report with the analysed period, recent-versus-
   usual evidence, repeated-change flags, uncertainty, and a neutral next step.
+- A prominent AI-assisted gameplay-history component that names the real on-
+  device landmark input and local prototype rule without claiming an LLM.
 - Sharing off by default.
 - A separate purpose-specific local supporter grant and revocation.
 - Exact disclosure of supporter-visible fields.
@@ -56,6 +59,7 @@ channel or credentials have yet been selected.
 - Production alerting, clinician messaging, cloud history, supporter
   authentication, or inferred family relationships.
 - A claim that previewing a message proves WeChat delivery.
+- A claim that an LLM or external AI service performs the history calculation.
 - Combining standing and seated baselines.
 
 ## UX flow
@@ -68,9 +72,11 @@ Recovery: unavailable transport keeps the editable preview and clearly states
 that no message was sent. Revocation immediately disables future send actions
 without deleting the player's history.
 
-Required states: no history, partial history, baseline, usual range, sustained
-prototype shift, simulated, sharing off, confirmation, active, revoked,
-preview-only, transport unavailable, and duplicate command.
+Required states: Stable, Declined, Improving, unavailable history, simulated,
+sharing off, confirmation, active, revoked, preview-only, transport
+unavailable, and duplicate command. Internal trend readiness still
+distinguishes no history, partial history, baseline, usual range, and sustained
+prototype shift.
 
 ## Functional requirements
 
@@ -89,6 +95,7 @@ preview-only, transport unavailable, and duplicate command.
 | TS-011 | Commands are idempotent. | The same event and grant produce the same command ID and cannot be sent twice. |
 | TS-012 | Audit data is minimal. | Grant/revoke and send outcomes contain IDs, versions, times, and result codes, never message bodies or raw provider identifiers. |
 | TS-013 | A trend result is explained as a report, not a verdict. | The progress surface names the analysed period and valid-session count, shows usual and recent values per metric family, flags only repeated prototype changes, explains possible everyday influences, and suggests a check-in without identifying a condition or cause. |
+| TS-014 | The progress surface has one simple gameplay direction. | Successfully loaded history renders Stable, Declined, or Improving. The copy makes on-device AI visible, discloses the local rule, and never attributes the history calculation to an LLM. |
 
 ## Prototype trend rule version 1
 
@@ -99,10 +106,17 @@ For one mode and one source:
 3. Compute each metric-family median and median absolute deviation (MAD).
 4. For each later session and family, mark an unfavourable shift when the value
    is below `median - max(0.12, 2 * MAD)`.
-5. Report a sustained prototype shift only when at least two metric families
+5. Mark a prototype improvement when the value is above
+   `median + max(0.12, 2 * MAD)`.
+6. Report a sustained prototype shift only when at least two metric families
    shift in at least two of the last three valid later sessions.
-6. With fewer than three later sessions, report a baseline but no sustained
-   conclusion.
+7. Report Declined or Improving only when at least two families repeatedly
+   move in that direction and outnumber families repeatedly moving in the
+   opposite direction. Mixed ties render Stable.
+8. With fewer than three later sessions, retain the internal readiness status
+   and no sustained conclusion, but render Stable as the requested gameplay
+   presentation.
+9. Unavailable local history does not render a gameplay direction.
 
 The 0.12 floor and two-MAD threshold are fixed engineering assumptions for the
 demo. They must not be tuned to create a desired conclusion or described as a
@@ -190,4 +204,3 @@ clinical cutoff.
 - Supporter binding/authentication for an external sandbox send.
 - Whether simulated check-in remains preview-only or is permitted to reach a
   labelled owner test recipient after channel selection.
-

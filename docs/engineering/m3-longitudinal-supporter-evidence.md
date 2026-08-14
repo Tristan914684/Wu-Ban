@@ -2,7 +2,7 @@
 
 **Status:** Locally verified; external WeChat owner-test gate open  
 **Owner:** Product and application engineering  
-**Last verified:** 12 August 2026
+**Last verified:** 14 August 2026
 **Reference when:** Reporting or changing personal trends, supporter consent,
 check-in preview, local sharing persistence, or notification transport.  
 **Agent obligation:** Never equate a local preview or unavailable adapter with
@@ -21,11 +21,19 @@ an externally delivered message.
   five valid sessions.
 - A sustained prototype shift requires at least two metric families in at
   least two of the last three later valid sessions.
+- The progress presentation also applies the same threshold symmetrically:
+  two repeatedly lower families produce Declined, two repeatedly higher
+  families produce Improving, and mixed, ordinary, or incomplete available
+  history produces Stable. This presentation direction does not replace the
+  downward-only supporter gate.
 - The progress surface renders a structured personal pattern report from the
   same versioned result. It names the analysed period and clear-session count,
   compares each metric family's usual median with the latest three-session
-  median, marks repeated changes, explains the flag rule and possible everyday
-  influences, and gives a non-diagnostic check-in next step.
+  median, presents a prominent AI-assisted gameplay-history result, marks
+  repeated changes, explains the local rule and possible everyday influences,
+  and gives a non-diagnostic check-in next step. The AI wording refers to the
+  on-device landmark model that supplies derived gameplay measures; no LLM,
+  API key, backend, or network history analysis is implemented or claimed.
 - Deterministic simulated history contains eight records, is generated outside
   personal history, spans eight weekly observations, and remains visibly
   labelled at every trend and sharing consumer.
@@ -62,16 +70,18 @@ upgrade.
 |---|---|
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with zero warnings |
-| `npm test` | 36 files, 125 tests passed |
+| `npm test` | 36 files, 135 tests passed |
 | `npm run test:integration` | 3 files, 7 tests passed |
 | `npx playwright test tests/e2e/progress-sharing.spec.ts` | 3 Chrome tests passed |
 | `npx playwright test tests/e2e/player-flow.spec.ts --grep "captured quality-invalid"` | 1 Chrome test passed after the report count selector replaced the removed side-card selector |
 
 Named tests cover BR-005, BR-008 through BR-013, the PRD 80% scoreable-input
-threshold, source/mode separation, insufficient history, repeated-family
-logic, deterministic simulation, separate grant, revocation, message
+threshold, source/mode separation, Stable/Declined/Improving presentation,
+symmetric repeated-family logic, incomplete-history Stable presentation,
+deterministic simulation, separate grant, revocation, message
 boundaries, trigger blocking, idempotency, privacy-safe audit records, and
-schema migration. A production-browser test also seeds a captured,
+schema migration. Improving is explicitly verified as ineligible for supporter
+check-in authorisation. A production-browser test also seeds a captured,
 quality-invalid record and verifies that it earns weekly participation credit
 while the comparable trend-valid count remains zero. Named application tests
 force both revocation and recipient-binding substitution between initial

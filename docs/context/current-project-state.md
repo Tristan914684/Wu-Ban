@@ -2,7 +2,7 @@
 
 **Status:** Active factual snapshot  
 **Owner:** Engineering lead  
-**Last verified:** 13 August 2026
+**Last verified:** 14 August 2026
 **Reference when:** Starting any task or reporting progress.  
 **Agent obligation:** Never describe proposed work as implemented; update this
 file after material verified changes.
@@ -21,7 +21,7 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: all 125 unit/component tests and all 7
+- Automated application tests: all 135 unit/component tests and all 7
   IndexedDB integration/migration tests pass in the current worktree. A full
   production-Chrome run passed 22 of 25 journeys; the trend selector affected
   by this change was corrected and then passed targeted, leaving the two
@@ -37,7 +37,7 @@ file after material verified changes.
 - Miora: official web studio identified, but the available Chrome session is
   signed out, so final asset generation remains blocked on owner sign-in.
 - CodeBuddy: owner-account submission evidence remains unverified.
-- Documentation operating system: active; 94 Markdown files and two repository
+- Documentation operating system: active; 99 Markdown files and two repository
   entrypoints validate locally with `node scripts/validate-docs.mjs`.
 
 ## Binding MVP direction
@@ -240,11 +240,18 @@ file after material verified changes.
 - Progress now presents a structured personal pattern report rather than only
   baseline percentages. It names the period and valid-session count, compares
   the first-five usual median with the latest-three median for Beat, Shape,
-  Flow, and Memory, flags only repeated prototype changes, explains the rule
-  and common non-medical influences, and offers a friendly check-in next step.
+  Flow, and Memory, and now gives one prominent AI-assisted gameplay result:
+  Stable, Declined, or Improving. The symmetric presentation rule uses the
+  existing personal threshold in both directions; successfully loaded
+  incomplete history defaults to Stable, while unavailable history stays
+  unavailable. The component states that landmark AI supplies the measures
+  and a local prototype rule calculates history, with no LLM, API key, or
+  network call. The downward-only supporter check-in gate remains unchanged.
   The simulated example spans eight weekly records and is labelled again
-  inside the report. The 1280 x 720 and 640-CSS-pixel reading layouts were
-  visually checked without horizontal overflow or browser-console warnings.
+  inside the report. The earlier 1280 x 720 and 640-CSS-pixel reading layouts
+  were visually checked without horizontal overflow or browser-console
+  warnings; the new component has local automated/build evidence but no new
+  browser or device claim.
 - Calibration and movement practice retain the landmark skeleton and now show
   a visible on-device AI quality readout. Standing reports the lowest required-
   landmark confidence used by the gate; seated reports the provider quality-
