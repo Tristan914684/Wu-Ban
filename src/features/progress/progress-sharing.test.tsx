@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { evaluatePersonalTrend } from "../../domain/trend/personal-trend";
 import { createSimulatedTrendHistory } from "../../domain/trend/simulated-history";
+import { buildSessionSummary } from "../../test-support/session-summary-builder";
 import { SharingScreen } from "../sharing/SharingScreen";
 import { ProgressScreen } from "./ProgressScreen";
 
@@ -16,6 +17,58 @@ function simulatedReport() {
   return evaluatePersonalTrend(createSimulatedTrendHistory("standing"), {
     mode: "standing",
     simulated: true,
+  });
+}
+
+function improvingReport() {
+  const baseline = Array.from({ length: 5 }, (_, index) =>
+    buildSessionSummary({
+      id: `baseline-${index}`,
+      completedAt: new Date(Date.UTC(2026, 6, index + 1)).toISOString(),
+      measures: {
+        beatAccuracy: 0.5,
+        shapeAccuracy: 0.5,
+        flowRecovery: 0.5,
+        memoryControl: 0.5,
+      },
+    }),
+  );
+  const recent = [
+    buildSessionSummary({
+      id: "recent-1",
+      completedAt: new Date(Date.UTC(2026, 6, 6)).toISOString(),
+      measures: {
+        beatAccuracy: 0.75,
+        shapeAccuracy: 0.5,
+        flowRecovery: 0.5,
+        memoryControl: 0.75,
+      },
+    }),
+    buildSessionSummary({
+      id: "recent-2",
+      completedAt: new Date(Date.UTC(2026, 6, 7)).toISOString(),
+      measures: {
+        beatAccuracy: 0.76,
+        shapeAccuracy: 0.5,
+        flowRecovery: 0.5,
+        memoryControl: 0.77,
+      },
+    }),
+    buildSessionSummary({
+      id: "recent-3",
+      completedAt: new Date(Date.UTC(2026, 6, 8)).toISOString(),
+      measures: {
+        beatAccuracy: 0.55,
+        shapeAccuracy: 0.5,
+        flowRecovery: 0.5,
+        memoryControl: 0.55,
+      },
+    }),
+  ];
+
+  return evaluatePersonalTrend([...baseline, ...recent], {
+    mode: "standing",
+    simulated: false,
   });
 }
 
@@ -40,7 +93,7 @@ describe("progress and sharing UI", () => {
     expect(
       screen.getByText(/不是你的表现，也没有加入本机历史/),
     ).toBeInTheDocument();
-    expect(screen.getByText("这不是诊断。")).toBeInTheDocument();
+    expect(screen.getByText(/不会识别疾病/)).toBeInTheDocument();
   });
 
   it("turns the sustained prototype signal into a transparent longitudinal report (BR-012, BR-013)", () => {
@@ -62,9 +115,14 @@ describe("progress and sharing UI", () => {
     expect(
       screen.getByRole("heading", { name: "Simulated pattern report" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Check-in suggested")).toBeInTheDocument();
+    expect(screen.getByText("AI-ASSISTED GAMEPLAY HISTORY")).toBeInTheDocument();
     expect(
-      screen.getByText(/Beat and Memory changed repeatedly/),
+      screen.getByText("Using on-device AI to analyze your performance"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Declined")).toBeInTheDocument();
+    expect(screen.getByText(/8 clear sessions analyzed locally/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Beat and Memory repeatedly moved below/),
     ).toBeInTheDocument();
     expect(screen.getByText("21 points below usual")).toBeInTheDocument();
     expect(
@@ -72,6 +130,53 @@ describe("progress and sharing UI", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(/does not identify a condition or explain its cause/),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/No cloud LLM or API key is used/)).toBeInTheDocument();
+  });
+
+  it("defaults available incomplete history to a stable gameplay result", () => {
+    render(
+      <ProgressScreen
+        excludedSimulatedCount={0}
+        language="en"
+        localDataStatus="ready"
+        onBack={vi.fn()}
+        onRetryLocalData={vi.fn()}
+        onModeChange={vi.fn()}
+        onOpenSharing={vi.fn()}
+        onToggleSimulation={vi.fn()}
+        report={evaluatePersonalTrend([], {
+          mode: "standing",
+          simulated: false,
+        })}
+        weeklyParticipation={0}
+      />,
+    );
+
+    expect(screen.getByText("Stable")).toBeInTheDocument();
+    expect(screen.getByText(/0 clear sessions analyzed locally/)).toBeInTheDocument();
+    expect(screen.queryByText(/Collecting data/i)).not.toBeInTheDocument();
+  });
+
+  it("shows improving when repeated gameplay measures rise above usual", () => {
+    render(
+      <ProgressScreen
+        excludedSimulatedCount={0}
+        language="en"
+        localDataStatus="ready"
+        onBack={vi.fn()}
+        onRetryLocalData={vi.fn()}
+        onModeChange={vi.fn()}
+        onOpenSharing={vi.fn()}
+        onToggleSimulation={vi.fn()}
+        report={improvingReport()}
+        weeklyParticipation={2}
+      />,
+    );
+
+    expect(screen.getByText("Improving")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Beat and Memory repeatedly moved above/),
     ).toBeInTheDocument();
   });
 
@@ -149,6 +254,9 @@ describe("progress and sharing UI", () => {
       "本机数据暂时无法读取",
     );
     expect(screen.queryByText(/还需要 5 次/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("AI-ASSISTED GAMEPLAY HISTORY"),
+    ).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "重试本机数据" }));
     expect(onRetryLocalData).toHaveBeenCalledOnce();

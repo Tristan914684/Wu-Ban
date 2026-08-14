@@ -4,6 +4,7 @@ import type {
   MetricTrendEvidence,
   TrendReport,
 } from "../../domain/trend/personal-trend";
+import { AiGameplayAnalysis } from "./AiGameplayAnalysis";
 
 interface PersonalPatternReportProps {
   readonly language: Language;
@@ -38,22 +39,6 @@ function formatDate(value: string, language: Language): string {
   }).format(new Date(value));
 }
 
-function familyList(
-  families: readonly MetricFamily[],
-  language: Language,
-): string {
-  const labels = families.map(
-    (family) => FAMILY_LABELS[family][language === "zh" ? 0 : 1],
-  );
-  if (language === "zh") {
-    return labels.join("和");
-  }
-  if (labels.length <= 1) {
-    return labels[0] ?? "";
-  }
-  return `${labels.slice(0, -1).join(", ")} and ${labels.at(-1)}`;
-}
-
 function changeCopy(
   evidence: MetricTrendEvidence,
   language: Language,
@@ -81,8 +66,10 @@ function evidenceStatusCopy(
       return language === "zh" ? "近期记录仍不足" : "More recent sessions needed";
     case "within-usual-range":
       return language === "zh" ? "没有重复变化" : "No repeated change";
-    case "repeated-change":
-      return language === "zh" ? "已标记重复变化" : "Repeated recent change flagged";
+    case "repeated-decline":
+      return language === "zh" ? "已标记重复下降" : "Repeated decline flagged";
+    case "repeated-improvement":
+      return language === "zh" ? "已标记重复改善" : "Repeated improvement flagged";
   }
 }
 
@@ -104,39 +91,6 @@ export function PersonalPatternReport({
     : isChinese
       ? "个人模式报告"
       : "Personal pattern report";
-  const flagTitle =
-    report.status === "sustained-shift"
-      ? isChinese
-        ? "建议友好关心"
-        : "Check-in suggested"
-      : report.status === "usual-range"
-        ? isChinese
-          ? "没有标记重复模式"
-          : "No repeated pattern flagged"
-        : report.status === "baseline-ready"
-          ? isChinese
-            ? "正在观察近期模式"
-            : "Monitoring the recent pattern"
-          : isChinese
-            ? "正在建立平常模式"
-            : "Building the usual pattern";
-  const flagDescription =
-    report.status === "sustained-shift"
-      ? isChinese
-        ? `${familyList(report.sustainedFamilies, language)}在最近三次清晰游戏中至少两次出现重复变化。`
-        : `${familyList(report.sustainedFamilies, language)} changed repeatedly in at least 2 of 3 recent clear sessions.`
-      : report.status === "usual-range"
-        ? isChinese
-          ? "最近三次清晰游戏没有在两个或以上方面出现重复变化。"
-          : "The last three clear sessions did not show repeated change across two or more areas."
-        : report.status === "baseline-ready"
-          ? isChinese
-            ? `平常范围已形成；还需要 ${Math.max(0, 3 - recentSessionCount)} 次近期清晰游戏，才会标记重复模式。`
-            : `The usual range is ready; ${Math.max(0, 3 - recentSessionCount)} more recent clear session${Math.max(0, 3 - recentSessionCount) === 1 ? " is" : "s are"} needed before a repeated pattern can be flagged.`
-          : isChinese
-            ? `还需要 ${report.sessionsNeeded} 次同一方式的清晰游戏，才会建立平常范围。`
-            : `${report.sessionsNeeded} more clear session${report.sessionsNeeded === 1 ? " is" : "s are"} needed in this mode to establish a usual range.`;
-
   return (
     <section className="personal-pattern-report" aria-labelledby="pattern-report-title">
       <header className="personal-pattern-report__header">
@@ -144,11 +98,11 @@ export function PersonalPatternReport({
           <span>
             {report.simulated
               ? isChinese
-                ? "模拟数据 · AI 辅助模式分析"
-                : "SIMULATED · AI-ASSISTED PATTERN ANALYSIS"
+                ? "模拟数据 · 游戏历史"
+                : "SIMULATED DATA · GAMEPLAY HISTORY"
               : isChinese
-                ? "AI 辅助模式分析 · 研究原型"
-                : "AI-ASSISTED PATTERN ANALYSIS · RESEARCH PROTOTYPE"}
+                ? "个人游戏历史 · 研究原型"
+                : "PERSONAL GAMEPLAY HISTORY · RESEARCH PROTOTYPE"}
           </span>
           <h2 id="pattern-report-title">{reportTitle}</h2>
         </div>
@@ -178,15 +132,7 @@ export function PersonalPatternReport({
         </div>
       </header>
 
-      <div
-        className="pattern-flag"
-        data-state={report.status}
-        role="status"
-      >
-        <span>{isChinese ? "模式标记" : "PATTERN FLAG"}</span>
-        <strong>{flagTitle}</strong>
-        <p>{flagDescription}</p>
-      </div>
+      <AiGameplayAnalysis language={language} report={report} />
 
       {evidence === null ? null : (
         <div className="pattern-evidence">
@@ -229,13 +175,13 @@ export function PersonalPatternReport({
         <summary>{isChinese ? "这个报告如何生成？" : "How was this report generated?"}</summary>
         <p>
           {isChinese
-            ? "本机 AI 先估计身体或手部关键点，透明的动作规则再形成四类游戏指标。原型把最初五次清晰游戏作为个人平常范围，并只比较同一游戏方式最近三次清晰记录。某一方面必须在三次中至少两次越过个人门槛，才会被标记；两个或以上方面被标记，才会建议关心。"
-            : "On-device AI first estimates body or hand landmarks. Transparent movement rules then produce four gameplay measures. The prototype uses the first five clear sessions as the personal usual range and compares only the latest three clear sessions in the same mode. An area is flagged only when it crosses its personal threshold in at least 2 of 3 recent sessions; two or more flagged areas produce a check-in suggestion."}
+            ? "本机 AI 先估计身体或手部关键点，透明的动作规则再形成四类游戏指标。原型把最初五次清晰游戏作为个人平常范围，并只比较同一游戏方式最近三次清晰记录。某一方面必须在三次中至少两次越过个人门槛，才会被标记；两个或以上方面朝同一方向重复变化，才会改变整体结果。这里没有使用云端 LLM 或 API 密钥；历史结果由本机原型趋势规则计算。"
+            : "On-device AI first estimates body or hand landmarks. Transparent movement rules then produce four gameplay measures. The prototype uses the first five clear sessions as the personal usual range and compares only the latest three clear sessions in the same mode. An area is flagged only when it crosses its personal threshold in at least 2 of 3 recent sessions; two or more areas repeatedly moving in the same direction change the overall result. No cloud LLM or API key is used; the history result is calculated locally by the prototype trend rule."}
         </p>
       </details>
 
       <div className="pattern-interpretation">
-        <h3>{isChinese ? "这个标记意味着什么" : "What this flag means"}</h3>
+        <h3>{isChinese ? "这个结果意味着什么" : "What this result means"}</h3>
         <p>
           {isChinese
             ? "这是游戏模式的观察，不会识别疾病，也无法解释变化原因。睡眠、情绪、不适、光线、摄像头位置和对游戏的熟悉程度都可能影响结果。"

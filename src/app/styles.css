@@ -2646,7 +2646,8 @@ code {
 }
 
 .personal-pattern-report__header span,
-.pattern-flag > span {
+.ai-gameplay-analysis__label,
+.ai-gameplay-analysis__result > span {
   color: var(--accent);
   font-size: 12px;
   font-weight: 800;
@@ -2676,27 +2677,173 @@ code {
   text-align: right;
 }
 
-.pattern-flag {
+@keyframes ai-gameplay-scan {
+  0% {
+    transform: translateX(-130%);
+  }
+
+  55%,
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+.ai-gameplay-analysis {
+  position: relative;
   display: grid;
-  gap: 7px;
-  padding: 17px 19px;
-  border-left: 6px solid var(--jade);
-  background: #dfe8df;
+  isolation: isolate;
+  gap: 17px;
+  overflow: hidden;
+  padding: clamp(18px, 3vw, 28px);
+  border: 2px solid var(--jade);
+  border-radius: 2px 8px 3px 6px;
+  color: var(--paper-light);
+  background:
+    repeating-linear-gradient(
+      -2deg,
+      transparent 0 20px,
+      rgb(250 246 237 / 3%) 21px 22px
+    ),
+    var(--ink);
+  box-shadow: 5px 6px 0 rgb(45 90 75 / 22%);
 }
 
-.pattern-flag[data-state="sustained-shift"] {
-  border-color: var(--caution);
-  background: #f3dfb0;
+.ai-gameplay-analysis::after {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 28%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(250 246 237 / 10%),
+    transparent
+  );
+  content: "";
+  animation: ai-gameplay-scan 4.8s cubic-bezier(0.2, 0, 0, 1) infinite;
+  pointer-events: none;
 }
 
-.pattern-flag strong {
+.ai-gameplay-analysis[data-trend="declined"] {
+  border-color: var(--gold);
+  box-shadow: 5px 6px 0 rgb(138 90 24 / 25%);
+}
+
+.ai-gameplay-analysis[data-trend="improving"] {
+  border-color: #79b59d;
+  box-shadow: 5px 6px 0 rgb(45 90 75 / 32%);
+}
+
+.ai-gameplay-analysis__header,
+.ai-gameplay-analysis__footer {
+  display: flex;
+  position: relative;
+  z-index: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.ai-gameplay-analysis__label {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #95d4bb;
+  line-height: 1.4;
+}
+
+.ai-gameplay-analysis__simulation {
+  padding: 3px 7px;
+  border: 1px solid var(--gold);
+  color: #f3c876;
+  background: rgb(138 90 24 / 28%);
+}
+
+.ai-gameplay-analysis__process {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  color: rgb(250 246 237 / 82%);
+  font-size: 15px;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.ai-gameplay-analysis__process > span {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #95d4bb;
+  box-shadow: 0 0 0 4px rgb(149 212 187 / 14%);
+}
+
+.ai-gameplay-analysis__result {
+  display: grid;
+  position: relative;
+  z-index: 1;
+  grid-template-columns: minmax(180px, 0.8fr) minmax(260px, 1.4fr);
+  gap: 6px 28px;
+  padding: clamp(16px, 2.4vw, 23px) 0;
+  border-top: 1px solid rgb(250 246 237 / 24%);
+  border-bottom: 1px solid rgb(250 246 237 / 24%);
+}
+
+.ai-gameplay-analysis__result > span {
+  grid-column: 1;
+  align-self: end;
+  color: #95d4bb;
+}
+
+.ai-gameplay-analysis__result strong {
+  grid-column: 1;
+  color: var(--paper-light);
   font-family:
     "Noto Serif SC Variable", "Songti SC", serif;
-  font-size: clamp(25px, 2.5vw, 34px);
-  font-weight: 560;
+  font-size: clamp(42px, 6vw, 74px);
+  font-weight: 520;
+  line-height: 0.98;
 }
 
-.pattern-flag p,
+.ai-gameplay-analysis[data-trend="declined"]
+  .ai-gameplay-analysis__result strong {
+  color: #f0c474;
+}
+
+.ai-gameplay-analysis[data-trend="improving"]
+  .ai-gameplay-analysis__result strong {
+  color: #a8dfc9;
+}
+
+.ai-gameplay-analysis__result p {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  margin: 0;
+  color: rgb(250 246 237 / 86%);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.ai-gameplay-analysis__footer {
+  align-items: baseline;
+  color: rgb(250 246 237 / 68%);
+  font-size: 14px;
+}
+
+.ai-gameplay-analysis__footer strong {
+  color: var(--paper-light);
+  font-size: 15px;
+}
+
+.ai-gameplay-analysis__footer span {
+  text-align: right;
+}
+
 .pattern-interpretation p,
 .pattern-method p {
   margin: 0;
@@ -2765,9 +2912,14 @@ code {
   text-align: right;
 }
 
-.pattern-evidence [data-status="repeated-change"]
+.pattern-evidence [data-status="repeated-decline"]
   .pattern-evidence__finding > strong {
   color: #714711;
+}
+
+.pattern-evidence [data-status="repeated-improvement"]
+  .pattern-evidence__finding > strong {
+  color: var(--jade);
 }
 
 .pattern-method {
@@ -3862,6 +4014,27 @@ code {
     text-align: left;
   }
 
+  .ai-gameplay-analysis__header,
+  .ai-gameplay-analysis__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ai-gameplay-analysis__process,
+  .ai-gameplay-analysis__footer span {
+    text-align: left;
+  }
+
+  .ai-gameplay-analysis__result {
+    grid-template-columns: 1fr;
+  }
+
+  .ai-gameplay-analysis__result p {
+    grid-column: 1;
+    grid-row: auto;
+    margin-top: 8px;
+  }
+
   .pattern-evidence dl > div {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3978,7 +4151,7 @@ code {
   .result-score,
   .dusk-art,
   .personal-pattern-report,
-  .pattern-flag,
+  .ai-gameplay-analysis,
   .perception-status {
     border: 2px solid CanvasText;
   }
