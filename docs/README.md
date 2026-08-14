@@ -140,6 +140,7 @@ docs/
 │   │   └── 2026-08-14-calibration-status-rail.md
 │   └── specs/
 │       ├── 2026-08-12-calibration-completion-freeze-design.md
+│       ├── 2026-08-14-ai-assisted-gameplay-trend-design.md
 │       └── 2026-08-14-calibration-status-rail-design.md
 ├── templates/
 │   ├── api-addition.md
@@ -291,6 +292,8 @@ docs/
   records the approved standing and seated calibration-completion contract.
 - `superpowers/specs/2026-08-14-calibration-status-rail-design.md` records the
   approved below-camera placement for calibration and on-device model status.
+- `superpowers/specs/2026-08-14-ai-assisted-gameplay-trend-design.md` records
+  the three-state gameplay result and truthful AI-assisted presentation.
 - `templates/*` are fill-in contracts for features, bugs, refactors, migrations,
   APIs, UI, performance, incidents, RFCs, postmortems, and retrospectives. Use
   the smallest template that covers the work.
