@@ -22,6 +22,10 @@ export interface StandingCalibration {
 }
 
 type RequiredPosePoint = keyof typeof POSE_INDEX;
+export type StandingCalibrationIssue =
+  | "missing-landmarks"
+  | "low-confidence"
+  | "multiple-people";
 
 function getPoint(
   landmarks: readonly NormalizedLandmark[],
@@ -105,10 +109,51 @@ function poseGeometry(
 export function calibrateStanding(
   frame: PoseFrame,
 ): StandingCalibration | undefined {
-  if (frame.personCount !== 1) {
+  if (standingCalibrationIssue(frame) !== null) {
     return undefined;
   }
   return poseGeometry(frame.landmarks);
+}
+
+export function standingCalibrationIssue(
+  frame: PoseFrame,
+): StandingCalibrationIssue | null {
+  if (frame.personCount > 1) {
+    return "multiple-people";
+  }
+  if (frame.personCount === 0) {
+    return "missing-landmarks";
+  }
+
+  const leftShoulder = getPoint(frame.landmarks, "leftShoulder");
+  const rightShoulder = getPoint(frame.landmarks, "rightShoulder");
+  const leftHip = getPoint(frame.landmarks, "leftHip");
+  const rightHip = getPoint(frame.landmarks, "rightHip");
+  const leftAnkle = getPoint(frame.landmarks, "leftAnkle");
+  const rightAnkle = getPoint(frame.landmarks, "rightAnkle");
+
+  if (
+    leftShoulder === undefined ||
+    rightShoulder === undefined ||
+    leftHip === undefined ||
+    rightHip === undefined ||
+    leftAnkle === undefined ||
+    rightAnkle === undefined
+  ) {
+    return "missing-landmarks";
+  }
+  if (
+    !isScoreable(leftShoulder) ||
+    !isScoreable(rightShoulder) ||
+    !isScoreable(leftHip) ||
+    !isScoreable(rightHip)
+  ) {
+    return "low-confidence";
+  }
+  if (!isScoreable(leftAnkle) || !isScoreable(rightAnkle)) {
+    return "missing-landmarks";
+  }
+  return null;
 }
 
 export function averageStandingCalibrations(

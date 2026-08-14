@@ -21,7 +21,7 @@ file after material verified changes.
   Hand Landmarker are self-hosted behind an adapter; real-frame validation
   remains.
 - Backend: not approved for the core local-first loop.
-- Automated application tests: all 135 unit/component tests and all 7
+- Automated application tests: all 139 unit/component tests and all 7
   IndexedDB integration/migration tests pass in the current worktree. A full
   production-Chrome run passed 22 of 25 journeys; the trend selector affected
   by this change was corrected and then passed targeted, leaving the two
@@ -96,7 +96,7 @@ file after material verified changes.
 
 ## Evidence status
 
-- Documentation validation, lint, the 16-test standing-classifier suite, 7
+- Documentation validation, lint, the 19-test standing-classifier suite, 7
   IndexedDB integration tests, TypeScript compilation, production Vite build,
   and bundle budget are verified in the current worktree. The full unit and
   browser-suite exceptions are recorded above and are outside the movement
@@ -116,11 +116,15 @@ file after material verified changes.
   and positioning guidance remain aligned inside the preview.
   Missing landmarks now prompt repositioning instead of being labelled as a
   lighting problem, and the MediaPipe provider confidence gate is aligned to
-  the domain gate at `0.45`. Active calibration progress is capped at 99%;
-  true 100% now freezes the accepted standing average or seated completion
-  state and stops the detector frame loop before the player releases position.
-  Component tests cover both modes and the near-threshold boundary. Real-camera
-  accuracy under representative lighting remains an open device-evidence gate.
+  the domain gate at `0.45`. Standing calibration now requires both shoulders,
+  both hips, and both ankles to clear that gate; an unclear ankle resets the
+  three-second window and keeps explicit full-body positioning guidance visible
+  instead of freezing a `null` forward/back baseline. Active calibration
+  progress is capped at 99%; true 100% now freezes the accepted standing average
+  or seated completion state and stops the detector frame loop before the player
+  releases position. Component tests cover both modes, the near-threshold
+  boundary, and unclear ankles. Real-camera accuracy under representative
+  lighting remains an open device-evidence gate.
 - Seated camera frames now pass through a reusable transient in-memory canvas
   and fresh Hand Landmarker image inference. This avoids both the task's
   unpopulated per-landmark visibility field and the browser build's empty

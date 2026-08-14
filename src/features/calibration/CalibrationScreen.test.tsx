@@ -133,6 +133,53 @@ describe("calibration layout", () => {
 });
 
 describe("calibration completion", () => {
+  it("keeps unclear ankles in the standing positioning state", async () => {
+    const callbacks = installAnimationFrameQueue();
+    const camera = new BrowserCamera();
+    const detector = new MediaPipeLandmarkDetector();
+    vi.spyOn(
+      HTMLMediaElement.prototype,
+      "readyState",
+      "get",
+    ).mockReturnValue(HTMLMediaElement.HAVE_CURRENT_DATA);
+    vi.spyOn(camera, "attachPreview").mockResolvedValue();
+    vi.spyOn(detector, "load").mockResolvedValue();
+    vi.spyOn(detector, "detect").mockReturnValue(
+      poseFrame({ leftAnkleConfidence: 0.2 }),
+    );
+
+    render(
+      <CalibrationScreen
+        camera={camera}
+        detector={detector}
+        language="en"
+        mode="standing"
+        onComplete={vi.fn()}
+        onUseSyntheticFallback={vi.fn()}
+        source="camera"
+      />,
+    );
+
+    await screen.findByText("Stable tracking 0%");
+    runNextFrame(callbacks, 100);
+    runNextFrame(callbacks, 3_179);
+
+    expect(screen.getByText("Stable tracking 0%")).toBeInTheDocument();
+    expect(
+      screen.getByText("Shoulders ✓ · Hips ✓ · Ankles —", {
+        selector: "p.camera-stage__parts",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Step back until your shoulders, hips, and both ankles are visible, then hold for three seconds.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Calibration complete — 100%"),
+    ).not.toBeInTheDocument();
+  });
+
   it("shows 100% only after freezing standing calibration", async () => {
     const callbacks = installAnimationFrameQueue();
     const camera = new BrowserCamera();

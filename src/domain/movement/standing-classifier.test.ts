@@ -5,6 +5,7 @@ import {
   averageStandingCalibrations,
   calibrateStanding,
   classifyStanding,
+  standingCalibrationIssue,
 } from "./standing-classifier";
 
 describe("standing movement traces", () => {
@@ -13,6 +14,22 @@ describe("standing movement traces", () => {
 
   it("creates a calibration from a scoreable stance", () => {
     expect(calibration).toBeDefined();
+  });
+
+  it.each([
+    ["left", { leftAnkleConfidence: 0.2 }],
+    ["right", { rightAnkleConfidence: 0.2 }],
+  ] as const)(
+    "does not calibrate when the %s ankle is unclear",
+    (_side, values) => {
+      expect(calibrateStanding(poseFrame(values))).toBeUndefined();
+    },
+  );
+
+  it("keeps generally low-confidence calibration separate from missing ankles", () => {
+    expect(
+      standingCalibrationIssue(poseFrame({ confidence: 0.2 })),
+    ).toBe("low-confidence");
   });
 
   it("averages the stable calibration window instead of using one frame", () => {

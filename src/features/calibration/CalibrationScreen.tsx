@@ -9,6 +9,7 @@ import { classifySeated } from "../../domain/movement/seated-classifier";
 import {
   averageStandingCalibrations,
   calibrateStanding,
+  standingCalibrationIssue,
   type StandingCalibration,
 } from "../../domain/movement/standing-classifier";
 import type {
@@ -129,19 +130,15 @@ export function CalibrationScreen({
               } else {
                 standingSamples.length = 0;
                 const reason =
-                  frame.personCount > 1
-                    ? "multiple-people"
-                    : frame.personCount === 0 || frame.landmarks.length < 29
-                      ? "missing-landmarks"
-                      : "low-confidence";
+                  standingCalibrationIssue(frame) ?? "missing-landmarks";
                 setPerceptionObservation({
                   kind: "unscoreable",
                   reason,
                 });
                 issue =
-                  frame.personCount > 1
+                  reason === "multiple-people"
                     ? "multiple-people"
-                    : frame.personCount === 0 || frame.landmarks.length < 29
+                    : reason === "missing-landmarks"
                       ? "position"
                       : "lighting";
               }
@@ -218,8 +215,8 @@ export function CalibrationScreen({
             ? "请增加正面光线、避开背光，并确保全身或双手清楚可见。"
             : "Add light in front, avoid backlight, and keep your body or hands visible."
           : isChinese
-            ? "保持在轮廓内三秒。"
-            : "Hold inside the outline for three seconds.";
+            ? "后退到肩部、髋部和双侧脚踝都清楚可见，然后保持三秒。"
+            : "Step back until your shoulders, hips, and both ankles are visible, then hold for three seconds.";
 
   return (
     <StepLayout
