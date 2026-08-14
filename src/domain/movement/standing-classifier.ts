@@ -8,7 +8,7 @@ import {
 
 const FOOT_SIDE_THRESHOLD = 0.06;
 const HIP_SIDE_THRESHOLD = 0.12;
-const FOOT_DEPTH_THRESHOLD = 0.06;
+const FOOT_DEPTH_THRESHOLD = 0.05;
 
 export interface StandingCalibration {
   readonly hipCenterX: number;

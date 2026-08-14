@@ -103,11 +103,6 @@ export function WelcomeScreen({
       <Button onClick={onReviewProgress} variant="secondary">
         {isChinese ? "查看我的节奏" : "View My rhythm"}
       </Button>
-      <p className="supporting-copy">
-        {isChinese
-          ? "无需账号。摄像头画面不会保存或上传。"
-          : "No account. Camera images are not saved or uploaded."}
-      </p>
       {historyCount === 0 ? null : (
         <div className="local-history">
           <span>

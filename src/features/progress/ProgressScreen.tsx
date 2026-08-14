@@ -162,16 +162,6 @@ export function ProgressScreen({
           {isChinese ? "返回首页" : "Back home"}
         </Button>
       </div>
-      <div className="claim-boundary">
-        <strong>
-          {isChinese ? "这不是诊断。" : "This is not a diagnosis."}
-        </strong>
-        <span>
-          {isChinese
-            ? "舞伴不会给出认知风险、疾病概率或紧急程度。"
-            : "Wǔbàn does not provide cognitive risk, disease probability, or urgency."}
-        </span>
-      </div>
     </StepLayout>
   );
 }
