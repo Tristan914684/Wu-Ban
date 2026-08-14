@@ -10,11 +10,17 @@ test("simulated trend stays separate through grant and revoke", async ({
 
   await expect(
     page.getByRole("heading", {
-      name: "正在认识你的平常节奏。",
+      name: "你的游戏趋势稳定。",
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.getByText("这不是诊断。", { exact: true })).toBeVisible();
+  const gameplayAnalysis = page.locator(".ai-gameplay-analysis");
+  await expect(
+    gameplayAnalysis.getByText("AI 辅助游戏历史", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    gameplayAnalysis.getByText("稳定", { exact: true }),
+  ).toBeVisible();
 
   await page
     .getByRole("button", { name: "查看模拟趋势演示", exact: true })
@@ -22,7 +28,7 @@ test("simulated trend stays separate through grant and revoke", async ({
   await expect(page.getByText("模拟数据", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("heading", {
-      name: "有两类节奏出现重复变化。",
+      name: "你的游戏趋势有所下降。",
       exact: true,
     }),
   ).toBeVisible();
@@ -32,10 +38,16 @@ test("simulated trend stays separate through grant and revoke", async ({
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.getByText("建议友好关心", { exact: true })).toBeVisible();
   await expect(
-    page.getByText(/节拍和顺序与停住在最近三次清晰游戏中至少两次出现重复变化/),
+    gameplayAnalysis.getByText("下降", { exact: true }),
   ).toBeVisible();
+  await expect(
+    gameplayAnalysis.getByText(
+      "节拍和顺序与停住在最近的清晰游戏中重复低于平常范围。",
+      { exact: true },
+    ),
+  ).toBeVisible();
+  await expect(page.getByText("建议下一步：", { exact: true })).toBeVisible();
 
   await page
     .getByRole("button", { name: "隐私与分享", exact: true })

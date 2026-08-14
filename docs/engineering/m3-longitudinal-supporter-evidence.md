@@ -97,10 +97,11 @@ At 1280 x 720 in the Codex in-app browser, with production E2E regression at
 
 1. Real local history showed zero trend-valid captured sessions and explicitly
    excluded three simulated gameplay sessions.
-2. The real state requested five more comparable clear sessions rather than
-   making a conclusion.
-3. The deterministic demonstration showed eight `SIMULATED DATA` sessions and
-   repeated Beat/Memory changes.
+2. The real state showed the AI-assisted gameplay-history component with the
+   overall presentation result `稳定` (Stable), including when fewer than five
+   clear comparable sessions were available.
+3. The deterministic demonstration showed eight `SIMULATED DATA` sessions, a
+   `下降` (Declined) result, and repeated Beat/Memory decline evidence.
 4. The global simulation badge remained visible on progress and sharing.
 5. Sharing opened as `默认关闭`.
 6. The scope excluded video, photos, landmarks, fun score, disease risk, and
@@ -121,11 +122,13 @@ At 1280 x 720 in the Codex in-app browser, with production E2E regression at
     made no sharing-off claim, exposed no grant/send controls, and recovered
     after a fresh read. A separate write fault left the grant inactive.
 15. The simulated personal pattern report showed an eight-week period, eight
-    clear sessions, usual-versus-recent values, repeated Beat/Memory flags, the
-    transparent method, possible everyday influences, and a neutral check-in
-    next step. At 1280 x 720 the report used a 1000-CSS-pixel reading width; at
-    640 CSS pixels it collapsed to one evidence column with zero horizontal
-    overflow. No console warning or error was present.
+    clear sessions, usual-versus-recent values, repeated Beat/Memory decline
+    flags, the transparent landmark-AI plus local-rule method, possible everyday
+    influences, and a neutral check-in next step. The updated Stable/Declined
+    result labels pass the targeted production-Chrome journey. At 1280 x 720
+    the report used a 1000-CSS-pixel reading width; at 640 CSS pixels it
+    collapsed to one evidence column with zero horizontal overflow. No console
+    warning or error was present.
 
 ## Open gates
 

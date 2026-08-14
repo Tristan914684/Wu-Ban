@@ -250,8 +250,9 @@ file after material verified changes.
   The simulated example spans eight weekly records and is labelled again
   inside the report. The earlier 1280 x 720 and 640-CSS-pixel reading layouts
   were visually checked without horizontal overflow or browser-console
-  warnings; the new component has local automated/build evidence but no new
-  browser or device claim.
+  warnings; the Stable real-history and Declined simulated-history states now
+  also pass the targeted production-Chrome progress-and-sharing journey. There
+  is still no real-camera or device claim for the new result.
 - Calibration and movement practice retain the landmark skeleton and now show
   a visible on-device AI quality readout. Standing reports the lowest required-
   landmark confidence used by the gate; seated reports the provider quality-
