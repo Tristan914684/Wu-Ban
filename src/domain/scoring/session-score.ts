@@ -41,7 +41,7 @@ export function outcomeForAttempt(attempt: CueAttempt): AttemptOutcome {
   if (attempt.timingOffsetMs === null) {
     return "nearly";
   }
-  return Math.abs(attempt.timingOffsetMs) <= 280 ? "good" : "nearly";
+  return Math.abs(attempt.timingOffsetMs) <= 500 ? "good" : "nearly";
 }
 
 export function scoreSession(
