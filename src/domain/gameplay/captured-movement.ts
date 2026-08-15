@@ -20,8 +20,8 @@ export const INITIAL_MOVEMENT_CAPTURE_LATCH: MovementCaptureLatch = {
 };
 
 export const MOVEMENT_CAPTURE_WINDOW_MS = {
-  beforeCue: 900,
-  afterCue: 400,
+  beforeCue: 1000,
+  afterCue: 500,
 } as const;
 
 export function updateMovementCaptureLatch(
