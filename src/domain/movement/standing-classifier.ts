@@ -8,7 +8,8 @@ import {
 
 const FOOT_SIDE_THRESHOLD = 0.06;
 const HIP_SIDE_THRESHOLD = 0.12;
-const FOOT_DEPTH_THRESHOLD = 0.05;
+const FOOT_DEPTH_THRESHOLD_FORWARD = 0.05;
+const FOOT_DEPTH_THRESHOLD_BACKWARD = 0.03;
 
 export interface StandingCalibration {
   readonly hipCenterX: number;
@@ -239,12 +240,12 @@ export function classifyStanding(
         calibration.bodyScale;
 
   const forwardStrength = Math.max(
-    Math.max(0, leftDepthChange) / FOOT_DEPTH_THRESHOLD,
-    Math.max(0, rightDepthChange) / FOOT_DEPTH_THRESHOLD,
+    Math.max(0, leftDepthChange) / FOOT_DEPTH_THRESHOLD_FORWARD,
+    Math.max(0, rightDepthChange) / FOOT_DEPTH_THRESHOLD_FORWARD,
   );
   const backwardStrength = Math.max(
-    Math.max(0, -leftDepthChange) / FOOT_DEPTH_THRESHOLD,
-    Math.max(0, -rightDepthChange) / FOOT_DEPTH_THRESHOLD,
+    Math.max(0, -leftDepthChange) / FOOT_DEPTH_THRESHOLD_BACKWARD,
+    Math.max(0, -rightDepthChange) / FOOT_DEPTH_THRESHOLD_BACKWARD,
   );
   const depthDominates =
     Math.max(forwardStrength, backwardStrength) >
