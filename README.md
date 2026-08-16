@@ -33,7 +33,3 @@ The product exists to explore a simple idea: most cognitive and physical wellnes
 | Local storage | IndexedDB |
 | Testing | Vitest (unit/integration), Playwright (E2E, with `@axe-core` accessibility checks) |
 | Hosting | Cloudflare Workers (static assets + SPA routing) |
-
-## Architecture
-
-The codebase follows a layered, ports-and-adapters style structure to keep gameplay logic testable and independent of browser APIs:
