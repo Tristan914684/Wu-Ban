@@ -20,7 +20,6 @@ The product exists to explore a simple idea: most cognitive and physical wellnes
 - **Personal trend tracking** — Compares each session's quality-checked results against a player's own historical baseline, stored entirely on-device.
 - **Consent-first sharing** — Players explicitly opt in before any trend summary is shared with a chosen supporter; sharing can be revoked at any time.
 - **Privacy by design** — All session history lives in the browser's IndexedDB, on that specific device only. Nothing is synced to a server or cloud database, and history can be cleared at any time from the app.
-- **Offline-capable** — A generated service worker precaches core assets and models for a resilient experience on lower-end devices.
 - **Bilingual UI** — Fully localized in Simplified Chinese and English.
 
 ## Tech Stack
