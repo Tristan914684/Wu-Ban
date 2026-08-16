@@ -1,65 +1,39 @@
-# Run and test 舞伴
+# 舞伴 Wǔbàn — DanceBros
 
-## Local development
+**A camera-based rhythm and memory game designed for older adults, built for the Tencent Cloud "AI Can Do It" Hackathon 2026 (Age Well track).**
 
-1. Use Node.js `24.18.0` and npm `11.16.0`:
+🔗 **Live demo:** [wu-ban.tristanlyn44.workers.dev](https://wu-ban.tristanlyn44.workers.dev/)
 
-   ```bash
-   nvm use
-   npm install -g npm@11.16.0
-   ```
+---
 
-2. Install dependencies:
+## Overview
 
-   ```bash
-   npm ci
-   ```
+Wǔbàn turns familiar social dancing into a short, joyful rhythm game. Players follow large on-screen movement cues while an on-device pose model reads their movement through the webcam — entirely locally, with no video ever leaving the browser. As players return for repeated sessions, the app quietly builds a personal baseline of movement and attention measures, and can flag a sustained change worth a friendly check-in with a trusted family member — without ever framing itself as a clinical or diagnostic tool.
 
-3. Start the development server:
+The product exists to explore a simple idea: most cognitive and physical wellness checks only happen after someone decides to seek them out. Wǔbàn adds a voluntary, play-based signal between checkups — something a person does anyway, for fun.
 
-   ```bash
-   npm run dev
-   ```
+## Key Features
 
-4. Open the app:
+- **On-device pose tracking** — Uses MediaPipe Tasks Vision to estimate hand and body landmarks locally in the browser; no frames are uploaded anywhere.
+- **Standing and seated modes** — Players choose a safe way to play based on their own mobility.
+- **Progressive difficulty** — Sessions start with simple movement cues, layer in beat timing, then introduce a short memory/inhibition challenge (remember a sequence, freeze on cue).
+- **Personal trend tracking** — Compares each session's quality-checked results against a player's own historical baseline, stored entirely on-device.
+- **Consent-first sharing** — Players explicitly opt in before any trend summary is shared with a chosen supporter; sharing can be revoked at any time.
+- **Privacy by design** — All session history lives in the browser's IndexedDB, on that specific device only. Nothing is synced to a server or cloud database, and history can be cleared at any time from the app.
+- **Offline-capable** — A generated service worker precaches core assets and models for a resilient experience on lower-end devices.
+- **Bilingual UI** — Fully localized in Simplified Chinese and English.
 
-   - Normal camera flow: [http://localhost:5173](http://localhost:5173)
-   - Accelerated camera-free simulation: [http://localhost:5173/?fast=1](http://localhost:5173/?fast=1)
-   - Development camera diagnostics: [http://localhost:5173/?debug=1](http://localhost:5173/?debug=1)
+## Tech Stack
 
-5. Run the complete automated test suite in Chrome:
+| Layer | Technology |
+|---|---|
+| Framework | React 19 + TypeScript |
+| Build tool | Vite |
+| Pose estimation | MediaPipe Tasks Vision (on-device inference) |
+| Local storage | IndexedDB |
+| Testing | Vitest (unit/integration), Playwright (E2E, with `@axe-core` accessibility checks) |
+| Hosting | Cloudflare Workers (static assets + SPA routing) |
 
-   ```bash
-   npm run verify:full
-   ```
+## Architecture
 
-6. Test the production build locally:
-****
-   ```bash
-   npm run preview
-   ```
-
-   Open the URL printed by Vite, normally [http://localhost:4173](http://localhost:4173).
-
-## Deployed production
-
-1. Sign in to the ChatGPT account that owns the deployment.
-
-2. Open [https://wuban-dance-companion.hello18528.chatgpt.site](https://wuban-dance-companion.hello18528.chatgpt.site).
-
-3. Run a camera-free smoke test at [https://wuban-dance-companion.hello18528.chatgpt.site/?fast=1](https://wuban-dance-companion.hello18528.chatgpt.site/?fast=1):
-
-   - Complete both the standing and seated routes.
-   - Confirm the gameplay and result screens remain clearly labelled `SIMULATED`.
-   - Open Progress and confirm the simulated session is not presented as real history.
-
-4. Run the real-device flow from the production base URL:
-
-   - Confirm the in-app camera disclosure appears before the browser permission prompt.
-   - Grant camera access and complete a session.
-   - Check tracking, audio, scoring, results, and progress history.
-
-5. Test local-data controls:
-
-   - Grant and revoke caregiver sharing.
-   - Clear local history and confirm the empty state appears.
+The codebase follows a layered, ports-and-adapters style structure to keep gameplay logic testable and independent of browser APIs:
